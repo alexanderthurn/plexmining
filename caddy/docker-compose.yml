@@ -2,8 +2,7 @@ services:
   php:
     image: php:8.3-fpm-alpine
     volumes:
-      - ../web:/var/www/html:ro
-      - ../data/config:/data/config:rw
+      - ../web:/var/www/html:rw
     restart: unless-stopped
 
   caddy:

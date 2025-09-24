@@ -20,12 +20,3 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: "./web/" 
           server-dir: "/" 
-
-      - name: FTP Deploy Data
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: w0058864.kasserver.com
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: "./data/"
-          server-dir: "/data/"

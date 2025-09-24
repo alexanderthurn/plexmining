@@ -2,7 +2,7 @@
 
 header('Content-Type: application/json');
 
-$cfgFile = '/data/config/settings.json';
+$cfgFile = '../data/config/settings.json';
 
 function json_write_atomic(string $path, array $data): void {
     $tmp = $path . '.' . bin2hex(random_bytes(4)) . '.tmp';

@@ -1,6 +1,11 @@
 :80 {
-    root * /var/www/html               # <— gleicher Pfad wie im PHP-Container
+    root * /var/www/html
     encode gzip
+
+    handle_path /data/* {
+        respond 403
+    }
+
     php_fastcgi php:9000
     file_server
 }
