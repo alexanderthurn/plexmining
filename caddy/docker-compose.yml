@@ -1,0 +1,19 @@
+services:
+  php:
+    image: php:8.3-fpm-alpine
+    volumes:
+      - ../web:/var/www/html:ro
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:alpine
+    ports:
+      - "9090:80"
+    volumes:
+      - ../web:/var/www/html:ro 
+      - ./mount/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./mount/data:/data
+      - ./mount/config:/config
+    depends_on:
+      - php
+    restart: unless-stopped

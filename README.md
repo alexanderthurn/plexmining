@@ -1,5 +1,6 @@
 # Plex Mining
 
+
 ![Plex Mining Logo](web/html/res/plexmining.png)
 
 
@@ -29,6 +30,25 @@ It allows both manual and automated management of multiple devices, optimized fo
 
 - **Extensible design**  
   Easy to adapt to different miner models and environments.
+
+
+## Development 
+
+```
+docker run --rm -p 8080:8080 -v "$PWD/web":/var/www/html php:8.3-cli-alpine php -S 0.0.0.0:8080 -t /var/www/html
+```
+
+open http://127.0.0.1:8080/index.html
+
+
+## Production
+
+```
+cd caddy
+docker-compose up
+```
+
+open http://127.0.0.1:9090/index.html
 
 ## License
 
