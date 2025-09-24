@@ -8,6 +8,8 @@ It allows both manual and automated management of multiple devices, optimized fo
 
 [PowerPoint Presentation](misc/bitcoinmining.pptx)
 
+[Demo](https://alexanderthurn.github.io/plexmining/web/html/demo.html)
+
 ## Features
 
 - **Multi-miner control**  
