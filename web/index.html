@@ -14,34 +14,45 @@
     <div class="container">
         <div class="row">
             <div class="col-md-6">
-                <div class="card">
+                <div class="card same-height">
                     <div class="card-body">
                         <h5 class="card-title">PV & Batterie</h5>
-                        <ul>
-                            <li>Aktuelle PV-Leistung (W): <span id="pv-leistung"></span></li>
-                            <li>Batteriestand (kWh + %): <span id="batterie-stand"></span></li>
-                            <li>Netzbezug / Einspeisung (W): <span id="netz-leistung"></span></li>
-                            <li>Verbrauch (Hauslast in W): <span id="haus-last"></span></li>
-                        </ul>
+                        <div class="d-flex">
+                            <div class="flex-grow-1">
+                                <ul>
+                                    <li>Aktuelle PV-Leistung (W): <span id="pv-leistung"></span></li>
+                                    <li>Batteriestand (kWh + %): <span id="batterie-stand"></span></li>
+                                    <li>Netzbezug / Einspeisung (W): <span id="netz-leistung"></span></li>
+                                    <li>Verbrauch (Hauslast in W): <span id="haus-last"></span></li>
+                                </ul>
+                            </div>
+                            <img src="res/section_pv.png" alt="PV Section Image" class="ml-3" style="width: 200px;">
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="card">
+                <div class="card same-height">
                     <div class="card-body">
                         <h5 class="card-title">Wetter & Prognose</h5>
-                        <ul>
-                            <li>Vorhersage PV-Ertrag (nächste Stunden): <span id="pv-prognose"></span></li>
-                            <li>Geplante Miner-Betriebszeiten (aus Automodus): <span id="miner-betriebszeiten"></span></li>
-                        </ul>
+                        <div class="d-flex">
+                            <div class="flex-grow-1">
+                                <ul>
+                                    <li>Vorhersage PV-Ertrag (nächste Stunden): <span id="pv-prognose"></span></li>
+                                    <li>Geplante Miner-Betriebszeiten (aus Automodus): <span id="miner-betriebszeiten"></span></li>
+                                </ul>
+                            </div>
+                            <img src="res/section_weather.png" alt="Weather Section Image" class="ml-3" style="width: 200px;">
+                        </div>
                     </div>
                 </div>
             </div>
+
         </div>
 
         <div class="row">
              <div class="col-md-6">
-                <div class="card">
+                <div class="card same-height">
                     <div class="card-body">
                         <h5 class="card-title">Steuerungselemente</h5>
                         <button class="btn btn-primary">Start Miner</button>
@@ -59,30 +70,68 @@
 
              </div>
              <div class="col-md-6">
-                 <div class="card">
+                 <div class="card same-height">
                     <div class="card-body">
                         <h5 class="card-title">Systeminfos</h5>
                         <ul>
                             <li>Zeitstempel der letzten Datenaktualisierung: <span id="last-update"></span></li>
                             <li>API-Status (Wetter, PV-Anlage erreichbar?): <span id="api-status"></span></li>
                             <li>Logauszug (Fehler/Warnings): <span id="log-auszug"></span></li>
+                            <li>Bitcoin Netzwerk:
+                                <ul>
+                                    <li>Total Hashrate: <span id="btc-total-hashrate"></span></li>
+                                    <li>Hash Price Index: <span id="btc-hash-price-index"></span></li>
+                                </ul>
+                            </li>
                         </ul>
                     </div>
                 </div>
             </div>
 
+
+        </div>
+
+
+        <div class="row">
+
             <div class="col-md-6">
-                <div class="card">
+                <div class="card same-height">
                     <div class="card-body">
-                        <h5 class="card-title">Ökonomisch</h5>
+                        <h5 class="card-title">Ökonomie-Kalkulation</h5>
+                        <div class="d-flex">
+                            <div class="flex-grow-1">
+                                <ul>
+                                    <li>Geschätzte Stromkosten (€/h, €/Tag): <span id="strom-kosten"></span></li>
+                                    <li>Ersparnis durch PV (%): <span id="pv-ersparnis"></span></li>
+                                    <li>BTC-Ertrag (aktuell / hochgerechnet): <span id="btc-ertrag"></span></li>
+                                </ul>
+                            </div>
+                            <img src="res/section_pv.png" alt="Economic Section Image" class="ml-3" style="width: 200px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+             <div class="col-md-6">
+                <div class="card same-height">
+                    <div class="card-body">
+                        <h5 class="card-title">14-Tage-Mining-Prognose</h5>
                         <ul>
-                            <li>Geschätzte Stromkosten (€/h, €/Tag): <span id="strom-kosten"></span></li>
-                            <li>Ersparnis durch PV (%): <span id="pv-ersparnis"></span></li>
-                            <li>BTC-Ertrag (aktuell / hochgerechnet): <span id="btc-ertrag"></span></li>
+                            <li>Gesamt-Laufzeit: <span id="prognose-gesamt-laufzeit"></span></li>
+                            <li>Gesamt-kWh: <span id="prognose-gesamt-kwh"></span></li>
+                            <li>Gesamt-Einnahmen: <span id="prognose-gesamt-einnahmen"></span></li>
+                            <li>Gesamt-Ausgaben: <span id="prognose-gesamt-ausgaben"></span></li>
+                            <br>
+                            <li>Durchschnittliche Laufzeit pro Tag: <span id="prognose-tag-laufzeit"></span></li>
+                            <li>Durchschnittliche kWh pro Tag: <span id="prognose-tag-kwh"></span></li>
+                            <li>Durchschnittliche Einnahmen pro Tag: <span id="prognose-tag-einnahmen"></span></li>
+                            <li>Durchschnittliche Ausgaben pro Tag: <span id="prognose-tag-ausgaben"></span></li>
                         </ul>
                     </div>
                 </div>
             </div>
+
+
         </div>
         
 
@@ -98,33 +147,85 @@
                             <thead>
                                 <tr>
                                     <th>Miner ID</th>
+                                    <th>Modell</th>
                                     <th>Status</th>
                                     <th>Hashrate (TH/s)</th>
                                     <th>Stromaufnahme (W)</th>
                                     <th>Temperatur (°C)</th>
+                                    <th>BTC/kWh</th>
+                                    <th>€/kWh</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
                                     <td>1</td>
+                                    <td>S23</td>
                                     <td>Running</td>
-                                    <td>100</td>
-                                    <td>1500</td>
-                                    <td>70</td>
+                                    <td>300</td>
+                                    <td>3500</td>
+                                    <td>75</td>
+                                    <td>0</td>
+                                    <td>0.15</td>
                                 </tr>
                                 <tr>
                                     <td>2</td>
+                                    <td>S21</td>
                                     <td>Error</td>
                                     <td>0</td>
                                     <td>0</td>
                                     <td>N/A</td>
+                                    <td>0</td>
+                                    <td>0.10</td>
                                 </tr>
                                 <tr>
                                     <td>3</td>
-                                    <td>Stopped</td>
+                                    <td>S 19J PRO</td>
+                                    <td>Idle</td>
                                     <td>0</td>
                                     <td>0</td>
                                     <td>N/A</td>
+                                    <td>0.0001</td>
+                                    <td>0.05</td>
+                                </tr>
+                                <tr>
+                                    <td>4</td>
+                                    <td>S 19J PRO</td>
+                                    <td>Idle</td>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td>N/A</td>
+                                    <td>0.0001</td>
+                                    <td>0.05</td>
+                                </tr>
+                                <tr>
+                                    <td>5</td>
+                                    <td>S 19J PRO</td>
+                                    <td>Idle</td>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td>N/A</td>
+                                    <td>0.0001</td>
+                                    <td>0.05</td>
+                                </tr>
+                                <tr>
+                                    <td>6</td>
+                                    <td>S 19J PRO</td>
+                                    <td>Idle</td>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td>N/A</td>
+                                    <td>0.0001</td>
+                                    <td>0.05</td>
+                                </tr>
+                                <tr>
+                                    <td>7</td>
+                                    <td>S 19J PRO</td>
+                                    <td>Idle</td>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td>N/A</td>
+                                    <td>0.0001</td>
+                                    <td>0.05</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -134,6 +235,12 @@
             </div>
         </div>
     </div>
+
+    <style>
+        .same-height {
+            min-height: 300px; /* Adjust the value as needed */
+        }
+    </style>
 
     <script src="res/script.js"></script>
     <script src="lib/bootstrap/js/bootstrap.bundle.min.js"></script>
