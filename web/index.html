@@ -16,16 +16,24 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">Photo Voltaik</h5>
-                        <p class="card-text">Informationen über Photo Voltaik.</p>
+                        <h5 class="card-title">PV & Batterie</h5>
+                        <ul>
+                            <li>Aktuelle PV-Leistung (W): <span id="pv-leistung"></span></li>
+                            <li>Batteriestand (kWh + %): <span id="batterie-stand"></span></li>
+                            <li>Netzbezug / Einspeisung (W): <span id="netz-leistung"></span></li>
+                            <li>Verbrauch (Hauslast in W): <span id="haus-last"></span></li>
+                        </ul>
                     </div>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">Wetter/Sonnenschein</h5>
-                        <p class="card-text">Wetter- und Sonnenscheindaten.</p>
+                        <h5 class="card-title">Wetter & Prognose</h5>
+                        <ul>
+                            <li>Vorhersage PV-Ertrag (nächste Stunden): <span id="pv-prognose"></span></li>
+                            <li>Geplante Miner-Betriebszeiten (aus Automodus): <span id="miner-betriebszeiten"></span></li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -35,9 +43,30 @@
              <div class="col-md-6">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">Steuerung</h5>
-                        <p class="card-text">Manuelle Steuerung hier.</p>
-                        <button class="btn btn-primary">Override</button>
+                        <h5 class="card-title">Steuerungselemente</h5>
+                        <button class="btn btn-primary">Start Miner</button>
+                        <button class="btn btn-danger">Stop Miner</button>
+                        <button class="btn btn-secondary">Restart Miner</button>
+                        <br><br>
+                        <label>Auto-Mode: <input type="checkbox" id="auto-mode"></label>
+                        <br><br>
+                        <label for="power-limit">Power-Limit / Taktung pro Miner:</label>
+                        <input type="range" id="power-limit" name="power-limit" min="0" max="100">
+                        <br><br>
+                        <button class="btn btn-dark">Alles aus</button>
+                    </div>
+                </div>
+
+             </div>
+             <div class="col-md-6">
+                 <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Systeminfos</h5>
+                        <ul>
+                            <li>Zeitstempel der letzten Datenaktualisierung: <span id="last-update"></span></li>
+                            <li>API-Status (Wetter, PV-Anlage erreichbar?): <span id="api-status"></span></li>
+                            <li>Logauszug (Fehler/Warnings): <span id="log-auszug"></span></li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -45,45 +74,61 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">Wirtschaftliche Berechnung</h5>
-                        <p class="card-text">Wirtschaftliche Leistung des Rigs.</p>
+                        <h5 class="card-title">Ökonomisch</h5>
+                        <ul>
+                            <li>Geschätzte Stromkosten (€/h, €/Tag): <span id="strom-kosten"></span></li>
+                            <li>Ersparnis durch PV (%): <span id="pv-ersparnis"></span></li>
+                            <li>BTC-Ertrag (aktuell / hochgerechnet): <span id="btc-ertrag"></span></li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </div>
-
+        
 
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">Miner Tabelle</h5>
+                        <h5 class="card-title">Miner</h5>
+                        <ul>
+                            <li>Anzahl aktiver Miner / Gesamt: <span id="miner-anzahl"></span></li>
+                        </ul>
                         <table class="table">
                             <thead>
                                 <tr>
                                     <th>Miner ID</th>
                                     <th>Status</th>
-                                    <th>Temperatur</th>
+                                    <th>Hashrate (TH/s)</th>
+                                    <th>Stromaufnahme (W)</th>
+                                    <th>Temperatur (°C)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
                                     <td>1</td>
-                                    <td>Online</td>
-                                    <td>65°C</td>
+                                    <td>Running</td>
+                                    <td>100</td>
+                                    <td>1500</td>
+                                    <td>70</td>
                                 </tr>
                                 <tr>
                                     <td>2</td>
-                                    <td>Online</td>
-                                    <td>68°C</td>
+                                    <td>Error</td>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td>N/A</td>
                                 </tr>
                                 <tr>
                                     <td>3</td>
-                                    <td>Offline</td>
+                                    <td>Stopped</td>
+                                    <td>0</td>
+                                    <td>0</td>
                                     <td>N/A</td>
                                 </tr>
                             </tbody>
                         </table>
+                         Auto-Mode: an/aus <span id="miner-auto-mode"></span>
                     </div>
                 </div>
             </div>
@@ -94,7 +139,7 @@
     <script src="lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <footer class="footer mt-auto py-3 bg-light">
       <div class="container">
-        <span class="text-muted">© 2025 Alexander Thurn | <a href="hhttps://github.com/alexanderthurn/plexmining">GitHub Repository</a></span>
+        <span class="text-muted">© 2025 Alexander Thurn | <a href="https://github.com/alexanderthurn/plexmining">GitHub Repository</a></span>
       </div>
     </footer>
 </body>
