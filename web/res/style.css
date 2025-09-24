@@ -6,9 +6,9 @@ img {
 }
 
 header {
-    background-color: #343a40;
+    background-color: #055093;
     color: white;
-    padding: 0px;
+    padding: 5px;
     position: fixed;
     top: 0;
     left: 0;
@@ -29,7 +29,7 @@ header h1 {
     margin: 0;
     font-size: 1.5em;
     margin-left: auto;
-    margin-right: 10px;
+    margin-right: 0px;
 }
 
 body {
