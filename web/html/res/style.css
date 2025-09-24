@@ -4,3 +4,31 @@ img {
     float: right;
     margin-left: 10px;
 }
+
+header {
+    background-color: #343a40;
+    color: white;
+    padding: 10px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+}
+
+header img {
+    max-width: 50px;
+    margin-right: 10px;
+    float: none;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+body {
+    padding-top: 70px; /* damit der Inhalt nicht vom Header überdeckt wird */
+}
