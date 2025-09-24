@@ -1,5 +1,8 @@
 # Plex Mining
 
+![Plex Mining Logo](web/html/res/plexmining.png)
+
+
 Plex Mining is a lightweight control system for Bitcoin miners.  
 It allows both manual and automated management of multiple devices, optimized for solar-powered setups.
 
