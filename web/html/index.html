@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Plex Mining</title>
+</head>
+<body>
+    <h1>Plex Mining</h1>
+    <div id="api-result"></div>
+
+    <script>
+        fetch('../api/index.php')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('api-result').textContent = data.message;
+            });
+    </script>
+</body>
+</html>
