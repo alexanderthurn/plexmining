@@ -35,3 +35,47 @@ header h1 {
 body {
     padding-top: 70px; /* damit der Inhalt nicht vom Header überdeckt wird */
 }
+
+.same-height {
+    min-height: 300px; /* Adjust the value as needed */
+}
+
+.section-image {
+    width: 200px;
+    height: auto;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .section-image {
+        width: 150px;
+        margin-top: 1rem;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+    }
+    
+    .btn-group .btn {
+        margin-bottom: 0.5rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+}
+
+/* Improve card spacing */
+.card {
+    margin-bottom: 1.5rem;
+}
+
+/* Better form styling */
+.form-range {
+    margin-top: 0.5rem;
+}
+
+/* Status badges */
+.badge {
+    font-size: 0.75em;
+}
