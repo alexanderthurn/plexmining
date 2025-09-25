@@ -19,11 +19,12 @@ function drawWeatherChart(rows) {
 
     // If settings available on window (injected via script.js), compute PV energy (kWh) as simple ratio from radiation and pv_kwp
     var pvKwp = (window.__plexSettings && typeof window.__plexSettings.pv_kwp === 'number') ? window.__plexSettings.pv_kwp : null;
+    var pvFactor = (window.__plexSettings && isFinite(Number(window.__plexSettings.pvSystemFactor))) ? Number(window.__plexSettings.pvSystemFactor) : 0.8;
     if (pvKwp) {
         data.forEach(function(d){
             if (d.valueRad != null) {
-                // Very simple proportional model: kWh = (rad Wh/m2 / 1000) * pv_kwp * 0.8 (assumed system efficiency)
-                d.valuePV = (d.valueRad / 1000) * pvKwp * 0.8;
+                // Very simple proportional model: kWh = (rad Wh/m2 / 1000) * pv_kwp * pvSystemFactor
+                d.valuePV = calculatePVEnergy(d.valueRad, pvKwp, pvFactor);
             }
         });
     }

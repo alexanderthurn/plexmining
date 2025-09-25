@@ -1,4 +1,5 @@
 {
     "c": "e",
-    "pv_kwp": 120
+    "pv_kwp": 120,
+    "pvSystemFactor": 0.8
 }
