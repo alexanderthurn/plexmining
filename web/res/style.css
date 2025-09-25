@@ -46,6 +46,19 @@ body {
 }
 
 /* Responsive improvements */
+@media (max-width: 991.98px) {
+    #weather-chart {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    /* Make Wetter card full width below lg breakpoint */
+    .col-md-6:nth-child(2) {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
 @media (max-width: 768px) {
     .section-image {
         width: 150px;
@@ -62,6 +75,16 @@ body {
     
     .table-responsive {
         font-size: 0.875rem;
+    }
+    
+    #weather-chart {
+        height: 200px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    #weather-chart {
+        height: 180px !important;
     }
 }
 

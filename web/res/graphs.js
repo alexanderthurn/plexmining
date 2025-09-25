@@ -2,7 +2,7 @@ function drawWeatherChart(rows) {
     var container = document.getElementById('weather-chart');
     if (!container) return;
     container.innerHTML = '';
-    var width = container.clientWidth || 600;
+    var width = Math.max(container.clientWidth || 600, 300);
     var height = container.clientHeight || 260;
     var margin = { top: 10, right: 55, bottom: 45, left: 50 };
 
