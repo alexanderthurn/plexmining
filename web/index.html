@@ -19,7 +19,7 @@
             <div class="col-md-6">
                 <div class="card same-height">
                     <div class="card-body">
-                        <h5 class="card-title">PV & Batterie</h5>
+                        <h5 class="card-title">PV & Batterie <small class="text-muted float-end" id="ts-pv"></small></h5>
                         <div class="d-flex">
                             <div class="flex-grow-1">
                                 <ul>
@@ -37,12 +37,13 @@
             <div class="col-md-6">
                 <div class="card same-height">
                     <div class="card-body">
-                        <h5 class="card-title">Wetter & Prognose</h5>
+                        <h5 class="card-title">Wetter & Prognose <small class="text-muted float-end" id="ts-weather"></small></h5>
                         <div class="d-flex">
                             <div class="flex-grow-1">
                                 <ul>
-                                    <li>Vorhersage PV-Ertrag (nächste Stunden): <span id="pv-prognose"></span></li>
-                                    <li>Geplante Miner-Betriebszeiten (aus Automodus): <span id="miner-betriebszeiten"></span></li>
+                                    <li>Sonnenstunden (nächster Tag): <span id="sun-hours-1d"></span></li>
+                                    <li>Sonnenstunden (nächste 7 Tage): <span id="sun-hours-7d"></span></li>
+                                    <li>Sonnenstunden (nächste 14 Tage): <span id="sun-hours-14d"></span></li>
                                 </ul>
                                 <div class="table-responsive">
                                     <table class="table table-sm" id="weather-table">
@@ -57,7 +58,6 @@
                                     </table>
                                 </div>
                             </div>
-                            <img src="res/section_weather.png" alt="Weather Section Image" class="ml-3 section-image" width="200" height="150" loading="lazy">
                         </div>
                     </div>
                 </div>
@@ -93,7 +93,7 @@
              <div class="col-md-6">
                  <div class="card same-height">
                     <div class="card-body">
-                        <h5 class="card-title">Systeminfos</h5>
+                        <h5 class="card-title">Systeminfos <small class="text-muted float-end" id="ts-system"></small></h5>
                         <ul>
                             <li>Zeitstempel der letzten Datenaktualisierung: <span id="last-update"></span></li>
                             <li>API-Status (Wetter, PV-Anlage erreichbar?): <span id="api-status"></span></li>
@@ -117,7 +117,7 @@
             <div class="col-md-6">
                 <div class="card same-height">
                     <div class="card-body">
-                        <h5 class="card-title">Ökonomie-Kalkulation</h5>
+                        <h5 class="card-title">Ökonomie-Kalkulation <small class="text-muted float-end" id="ts-economy"></small></h5>
                         <div class="d-flex">
                             <div class="flex-grow-1">
                                 <ul>
@@ -135,7 +135,7 @@
              <div class="col-md-6">
                 <div class="card same-height">
                     <div class="card-body">
-                        <h5 class="card-title">14-Tage-Mining-Prognose</h5>
+                        <h5 class="card-title">14-Tage-Mining-Prognose <small class="text-muted float-end" id="ts-forecast"></small></h5>
                         <ul>
                             <li>Gesamt-Laufzeit: <span id="prognose-gesamt-laufzeit"></span></li>
                             <li>Gesamt-kWh: <span id="prognose-gesamt-kwh"></span></li>
@@ -158,7 +158,7 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">Miner</h5>
+                        <h5 class="card-title">Miner <small class="text-muted float-end" id="ts-miners"></small></h5>
                         <ul>
                             <li>Anzahl aktiver Miner / Gesamt: <span id="miner-anzahl"></span></li>
                         </ul>

@@ -62,7 +62,54 @@ function fetchAndRenderMiners() {
             if (data && (data.weather || data.calculation)) {
                 renderWeatherAndForecast(data.weather, data.calculation);
             }
-            // Last update timestamp
+            // Last update timestamps: show relative age (< 7d) or date; color if >24h (warning) or >48h (danger)
+            var setRelativeTs = function(elId, tsSeconds) {
+                var el = document.getElementById(elId);
+                if (!el) return;
+                el.classList.remove('text-muted', 'text-warning', 'text-danger');
+                if (!tsSeconds) { el.textContent = ''; return; }
+                var now = Date.now();
+                var tsMs = tsSeconds * 1000;
+                var diffMs = Math.max(0, now - tsMs);
+                var diffSec = Math.floor(diffMs / 1000);
+                var diffMin = Math.floor(diffSec / 60);
+                var diffHour = Math.floor(diffMin / 60);
+                var diffDay = Math.floor(diffHour / 24);
+                var text = '';
+                if (diffDay < 7) {
+                    if (diffSec < 60) {
+                        text = 'vor ' + diffSec + ' Sekunden';
+                    } else if (diffMin < 60) {
+                        text = 'vor ' + diffMin + ' Minuten';
+                    } else if (diffHour < 24) {
+                        text = 'vor ' + diffHour + ' Stunden';
+                    } else {
+                        text = 'vor ' + diffDay + ' Tagen';
+                    }
+                } else {
+                    try {
+                        text = new Date(tsMs).toLocaleString('de-DE', { hour12: false });
+                    } catch (e) {
+                        text = '';
+                    }
+                }
+                el.textContent = text;
+                if (diffHour >= 48) {
+                    el.classList.add('text-danger');
+                } else if (diffHour >= 24) {
+                    el.classList.add('text-warning');
+                } else {
+                    el.classList.add('text-muted');
+                }
+            };
+            if (data && data.mtimes) {
+                setRelativeTs('ts-pv', data.mtimes.pv);
+                setRelativeTs('ts-weather', data.mtimes.weather);
+                setRelativeTs('ts-miners', data.mtimes.miners);
+                setRelativeTs('ts-system', data.mtimes.settings);
+                setRelativeTs('ts-economy', data.mtimes.pv);
+                setRelativeTs('ts-forecast', data.mtimes.weather);
+            }
             setText('last-update', new Date().toISOString());
         })
         .catch(function() {
@@ -100,9 +147,19 @@ function renderPV(pv) {
 }
 
 function renderWeatherAndForecast(weather, calculation) {
-    // For now we just display dummy forecast values from calculation
-    if (calculation && Array.isArray(calculation.pv_forecast_kwh_next_hours)) {
-        setText('pv-prognose', calculation.pv_forecast_kwh_next_hours.join(' / ') + ' kWh');
+    // Aggregate sunshine hours
+    var sum = function(arr, n) {
+        var s = 0; var count = Math.min(n, arr.length);
+        for (var i = 0; i < count; i++) {
+            var v = arr[i] && typeof arr[i].sunshine_hours === 'number' ? arr[i].sunshine_hours : 0;
+            s += v;
+        }
+        return Math.round(s * 100) / 100;
+    };
+    if (Array.isArray(weather)) {
+        setText('sun-hours-1d', String(sum(weather, 1)) + ' h');
+        setText('sun-hours-7d', String(sum(weather, 7)) + ' h');
+        setText('sun-hours-14d', String(sum(weather, 14)) + ' h');
     }
     // Render compact weather table
     var tbody = document.getElementById('weather-table-body');

@@ -39,12 +39,20 @@ try {
     $calculation = ['error' => 'calculation unavailable'];
 }
 
+$mtimes = [
+    'settings' => is_file($settingsFile) ? filemtime($settingsFile) : null,
+    'miners' => is_file($minersFile) ? filemtime($minersFile) : null,
+    'weather' => is_file($weatherFile) ? filemtime($weatherFile) : null,
+    'pv' => is_file($pvFile) ? filemtime($pvFile) : null,
+];
+
 $result = [
     'settings' => $settings,
     'miners' => $miners,
     'weather' => $weather,
     'pv' => $pv,
     'calculation' => $calculation,
+    'mtimes' => $mtimes,
 ];
 
 echo json_encode($result, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);

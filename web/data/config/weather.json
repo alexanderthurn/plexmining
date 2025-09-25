@@ -1,8 +1,72 @@
 [
-  { "date": "2025-09-20", "sunshine_hours": 6.2, "shortwave_radiation_sum_Wh_m2": 3200 },
-  { "date": "2025-09-21", "sunshine_hours": 4.5, "shortwave_radiation_sum_Wh_m2": 2100 },
-  { "date": "2025-09-22", "sunshine_hours": 2.0, "shortwave_radiation_sum_Wh_m2": 900 },
-  { "date": "2025-09-23", "sunshine_hours": 7.8, "shortwave_radiation_sum_Wh_m2": 4100 },
-  { "date": "2025-09-24", "sunshine_hours": 5.3, "shortwave_radiation_sum_Wh_m2": 2500 }
+    {
+        "date": "2025-09-25",
+        "sunshine_hours": 0,
+        "shortwave_radiation_sum_Wh_m2": 0.6
+    },
+    {
+        "date": "2025-09-26",
+        "sunshine_hours": 4.92,
+        "shortwave_radiation_sum_Wh_m2": 8.12
+    },
+    {
+        "date": "2025-09-27",
+        "sunshine_hours": 7.81,
+        "shortwave_radiation_sum_Wh_m2": 12.21
+    },
+    {
+        "date": "2025-09-28",
+        "sunshine_hours": 9.72,
+        "shortwave_radiation_sum_Wh_m2": 13.61
+    },
+    {
+        "date": "2025-09-29",
+        "sunshine_hours": 8.38,
+        "shortwave_radiation_sum_Wh_m2": 12.65
+    },
+    {
+        "date": "2025-09-30",
+        "sunshine_hours": 0.56,
+        "shortwave_radiation_sum_Wh_m2": 9.22
+    },
+    {
+        "date": "2025-10-01",
+        "sunshine_hours": 9.42,
+        "shortwave_radiation_sum_Wh_m2": 13.22
+    },
+    {
+        "date": "2025-10-02",
+        "sunshine_hours": 10.23,
+        "shortwave_radiation_sum_Wh_m2": 13.37
+    },
+    {
+        "date": "2025-10-03",
+        "sunshine_hours": 9.91,
+        "shortwave_radiation_sum_Wh_m2": 12.87
+    },
+    {
+        "date": "2025-10-04",
+        "sunshine_hours": 10.36,
+        "shortwave_radiation_sum_Wh_m2": 12.62
+    },
+    {
+        "date": "2025-10-05",
+        "sunshine_hours": 5.65,
+        "shortwave_radiation_sum_Wh_m2": 12.19
+    },
+    {
+        "date": "2025-10-06",
+        "sunshine_hours": 6.38,
+        "shortwave_radiation_sum_Wh_m2": 8.56
+    },
+    {
+        "date": "2025-10-07",
+        "sunshine_hours": 9.94,
+        "shortwave_radiation_sum_Wh_m2": 3.6
+    },
+    {
+        "date": "2025-10-08",
+        "sunshine_hours": 7.98,
+        "shortwave_radiation_sum_Wh_m2": 10.02
+    }
 ]
-
