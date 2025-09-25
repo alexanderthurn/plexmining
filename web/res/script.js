@@ -17,7 +17,7 @@ function fetchData(url) {
 
 const demoMode = getParameterByName('demo') === 'true';
 const apiUrl = demoMode ? '../api/index.php?fake=true' : '../api/index.php';
-const minersApiUrl = '../api/miners.php';
+const dataApiUrl = '../api/data.php';
 
 function populateMinerTable(miners) {
     const tbody = document.getElementById('miner-table-body');
@@ -42,16 +42,28 @@ function populateMinerTable(miners) {
 }
 
 function fetchAndRenderMiners() {
-    fetch(minersApiUrl)
+    fetch(dataApiUrl)
         .then(function(response) { return response.json(); })
         .then(function(data) {
-            if (Array.isArray(data)) {
-                populateMinerTable(data);
-            } else if (data && Array.isArray(data.miners)) {
+            if (data && Array.isArray(data.miners)) {
                 populateMinerTable(data.miners);
+                renderMinerCounts(data.miners);
+            } else if (Array.isArray(data)) {
+                // Backward compat: if endpoint returns array directly
+                populateMinerTable(data);
+                renderMinerCounts(data);
             } else {
                 populateMinerTable([]);
             }
+            // Render PV and Weather
+            if (data && data.pv) {
+                renderPV(data.pv);
+            }
+            if (data && (data.weather || data.calculation)) {
+                renderWeatherAndForecast(data.weather, data.calculation);
+            }
+            // Last update timestamp
+            setText('last-update', new Date().toISOString());
         })
         .catch(function() {
             populateMinerTable([]);
@@ -65,6 +77,53 @@ function getStatusBadgeClass(status) {
         case 'Idle': return 'bg-secondary';
         default: return 'bg-light text-dark';
     }
+}
+
+function setText(id, value) {
+    var el = document.getElementById(id);
+    if (el) {
+        el.textContent = value;
+    }
+}
+
+function renderPV(pv) {
+    if (!pv) return;
+    if (typeof pv.pv_leistung_w !== 'undefined') setText('pv-leistung', String(pv.pv_leistung_w));
+    if (pv.batterie_stand && typeof pv.batterie_stand.kwh !== 'undefined' && typeof pv.batterie_stand.percent !== 'undefined') {
+        setText('batterie-stand', pv.batterie_stand.kwh + ' kWh (' + pv.batterie_stand.percent + '%)');
+    }
+    if (typeof pv.netz_leistung_w !== 'undefined') setText('netz-leistung', String(pv.netz_leistung_w));
+    if (typeof pv.haus_last_w !== 'undefined') setText('haus-last', String(pv.haus_last_w));
+    if (Array.isArray(pv.miner_betriebszeiten)) {
+        setText('miner-betriebszeiten', pv.miner_betriebszeiten.join(', '));
+    }
+}
+
+function renderWeatherAndForecast(weather, calculation) {
+    // For now we just display dummy forecast values from calculation
+    if (calculation && Array.isArray(calculation.pv_forecast_kwh_next_hours)) {
+        setText('pv-prognose', calculation.pv_forecast_kwh_next_hours.join(' / ') + ' kWh');
+    }
+    // Render compact weather table
+    var tbody = document.getElementById('weather-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    if (Array.isArray(weather)) {
+        weather.forEach(function(row) {
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + (row.date || '') + '</td>' +
+                           '<td>' + (typeof row.sunshine_hours !== 'undefined' ? row.sunshine_hours : '') + '</td>' +
+                           '<td>' + (typeof row.shortwave_radiation_sum_Wh_m2 !== 'undefined' ? row.shortwave_radiation_sum_Wh_m2 : '') + '</td>';
+            tbody.appendChild(tr);
+        });
+    }
+}
+
+function renderMinerCounts(miners) {
+    if (!Array.isArray(miners)) return;
+    var total = miners.length;
+    var active = miners.filter(function(m) { return m.status === 'Running'; }).length;
+    setText('miner-anzahl', active + ' / ' + total);
 }
 
 // Initialize the page when DOM is loaded

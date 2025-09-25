@@ -1,0 +1,8 @@
+[
+  { "date": "2025-09-20", "sunshine_hours": 6.2, "shortwave_radiation_sum_Wh_m2": 3200 },
+  { "date": "2025-09-21", "sunshine_hours": 4.5, "shortwave_radiation_sum_Wh_m2": 2100 },
+  { "date": "2025-09-22", "sunshine_hours": 2.0, "shortwave_radiation_sum_Wh_m2": 900 },
+  { "date": "2025-09-23", "sunshine_hours": 7.8, "shortwave_radiation_sum_Wh_m2": 4100 },
+  { "date": "2025-09-24", "sunshine_hours": 5.3, "shortwave_radiation_sum_Wh_m2": 2500 }
+]
+

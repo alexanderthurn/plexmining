@@ -1,0 +1,9 @@
+{
+  "pv_leistung_w": 4200,
+  "batterie_stand": { "kwh": 5.2, "percent": 62 },
+  "netz_leistung_w": -350,
+  "haus_last_w": 2200,
+  "pv_prognose_w_h": [500, 800, 1200, 1500, 1100, 700],
+  "miner_betriebszeiten": ["08:00-10:00", "12:00-14:00", "16:00-18:00"]
+}
+
