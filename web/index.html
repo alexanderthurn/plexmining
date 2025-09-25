@@ -20,16 +20,27 @@
                 <div class="card same-height">
                     <div class="card-body">
                         <h5 class="card-title">PV & Batterie <small class="text-muted float-end" id="ts-pv"></small></h5>
-                        <div class="d-flex">
-                            <div class="flex-grow-1">
-                                <ul>
-                                    <li>Aktuelle PV-Leistung (W): <span id="pv-leistung"></span></li>
-                                    <li>Batteriestand (kWh + %): <span id="batterie-stand"></span></li>
-                                    <li>Netzbezug / Einspeisung (W): <span id="netz-leistung"></span></li>
-                                    <li>Verbrauch (Hauslast in W): <span id="haus-last"></span></li>
-                                </ul>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="text-center mb-3">
+                                    <h6>Batteriestand</h6>
+                                    <div id="battery-donut" style="width: 150px; height: 150px; margin: 0 auto;"></div>
+                                    <div class="mt-2">
+                                        <small class="text-muted"><span id="batterie-current"></span> kWh</small><br>
+                                        <small class="text-muted">> <span id="mining-min-battery"></span> kWh</small><br>
+                                        <small class="text-muted">Mining möglich: <span id="mining-status"></span></small>
+                                    </div>
+                                </div>
                             </div>
-                            <img src="res/section_pv.png" alt="PV Section Image" class="ml-3 section-image" width="200" height="150" loading="lazy">
+                            <div class="col-md-6">
+                                <div class="text-center mb-3">
+                                    <h6>PV-Leistung</h6>
+                                    <div id="solar-panel" style="width: 150px; height: 120px; margin: 0 auto;"></div>
+                                    <div class="mt-2">
+                                        <span id="pv-leistung" class="h5 text-primary"></span> W
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

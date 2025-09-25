@@ -89,15 +89,56 @@ function fetchAndRenderMiners() {
 
 function renderPV(pv) {
     if (!pv) return;
-    if (typeof pv.pv_leistung_w !== 'undefined') setText('pv-leistung', formatNumberDE(pv.pv_leistung_w, 0));
-    if (pv.batterie_stand && typeof pv.batterie_stand.kwh !== 'undefined' && typeof pv.batterie_stand.percent !== 'undefined') {
-        setText('batterie-stand', formatNumberDE(pv.batterie_stand.kwh, 2) + ' kWh (' + formatNumberDE(pv.batterie_stand.percent, 0) + '%)');
+    
+    // PV Leistung
+    var pvPower = typeof pv.pv_leistung_w !== 'undefined' ? pv.pv_leistung_w : 0;
+    setText('pv-leistung', formatNumberDE(pvPower, 0));
+    
+    // Batterie
+    var batteryKwh = pv.batterie_stand && typeof pv.batterie_stand.kwh !== 'undefined' ? pv.batterie_stand.kwh : 0;
+    var batteryPercent = pv.batterie_stand && typeof pv.batterie_stand.percent !== 'undefined' ? pv.batterie_stand.percent : 0;
+    var batteryCapacity = pv.batterie_stand && typeof pv.batterie_stand.capacity_kwh !== 'undefined' ? pv.batterie_stand.capacity_kwh : 49.9;
+    setText('batterie-kwh', formatNumberDE(batteryCapacity, 1));
+    
+    
+    // Aktuelle Batteriekapazität anzeigen
+    setText('batterie-current', formatNumberDE(batteryKwh, 1));
+    
+    // Mining-Status prüfen und verfügbare Leistung anzeigen
+    var miningMinBattery = (window.__plexSettings && typeof window.__plexSettings.miningMinBatteryKwh !== 'undefined') ? window.__plexSettings.miningMinBatteryKwh : 15.0;
+    setText('mining-min-battery', formatNumberDE(miningMinBattery, 1));
+    
+    var miningPossible = batteryKwh >= miningMinBattery;
+    var batteryDifference = batteryKwh - miningMinBattery;
+    var hausLast = typeof pv.haus_last_w !== 'undefined' ? pv.haus_last_w : 0;
+    var availablePower = pvPower - hausLast;
+    
+    var miningStatusText = miningPossible ? 'Ja, ' + formatNumberDE(batteryDifference, 1) + ' kWh' : 'Nein';
+    var miningStatusClass = miningPossible ? 'text-success' : 'text-danger';
+    var miningStatusEl = document.getElementById('mining-status');
+    if (miningStatusEl) {
+        miningStatusEl.textContent = miningStatusText;
+        miningStatusEl.className = 'fw-bold ' + miningStatusClass;
     }
-    if (typeof pv.netz_leistung_w !== 'undefined') setText('netz-leistung', formatNumberDE(pv.netz_leistung_w, 0));
-    if (typeof pv.haus_last_w !== 'undefined') setText('haus-last', formatNumberDE(pv.haus_last_w, 0));
+    
+    // Hauslast und verfügbare Leistung anzeigen
+    setText('haus-last', formatNumberDE(hausLast, 0));
+    setText('available-power', formatNumberDE(availablePower, 0));
     if (Array.isArray(pv.miner_betriebszeiten)) {
         setText('miner-betriebszeiten', pv.miner_betriebszeiten.join(', '));
     }
+    
+    // Draw charts
+    try {
+        if (typeof d3 !== 'undefined') {
+            if (typeof drawBatteryDonut === 'function') {
+                drawBatteryDonut(batteryPercent, batteryKwh);
+            }
+            if (typeof drawSolarPanel === 'function') {
+                drawSolarPanel(pvPower);
+            }
+        }
+    } catch (e) { /* no-op */ }
 }
 
 function renderWeatherAndForecast(weather, calculation) {
@@ -114,17 +155,21 @@ function renderWeatherAndForecast(weather, calculation) {
         setText('rad-7d', formatNumberDE(sumRadiation(weather, 7), 0));
         setText('rad-14d', formatNumberDE(sumRadiation(weather, 14), 0));
 
+        // PV energy is now calculated server-side in data.php
         var pvKwp = (window.__plexSettings && typeof window.__plexSettings.pv_kwp === 'number') ? window.__plexSettings.pv_kwp : null;
-        var pvFactor = (window.__plexSettings && isFinite(Number(window.__plexSettings.pvSystemFactor))) ? Number(window.__plexSettings.pvSystemFactor) : 0.8;
         if (pvKwp) {
-            var pv1 = (sumRadiation(weather, 1) / 1000) * pvKwp * pvFactor;
-            var pvT = (sumRadiation(weather.slice(1), 1) / 1000) * pvKwp * pvFactor;
-            var pv7 = (sumRadiation(weather, 7) / 1000) * pvKwp * pvFactor;
-            var pv14 = (sumRadiation(weather, 14) / 1000) * pvKwp * pvFactor;
-            setText('pv-today', formatNumberDE(pv1, 2));
-            setText('pv-tomorrow', formatNumberDE(pvT, 2));
-            setText('pv-7d', formatNumberDE(pv7, 2));
-            setText('pv-14d', formatNumberDE(pv14, 2));
+            var sumPV = function(arr, n) {
+                var s = 0; var count = Math.min(n, arr.length);
+                for (var i = 0; i < count; i++) {
+                    var v = arr[i] && typeof arr[i].pv_energy_kwh === 'number' ? arr[i].pv_energy_kwh : 0;
+                    s += v;
+                }
+                return Math.round(s * 100) / 100;
+            };
+            setText('pv-today', formatNumberDE(sumPV(weather, 1), 2));
+            setText('pv-tomorrow', formatNumberDE(sumPV(weather.slice(1), 1), 2));
+            setText('pv-7d', formatNumberDE(sumPV(weather, 7), 2));
+            setText('pv-14d', formatNumberDE(sumPV(weather, 14), 2));
         } else {
             setText('pv-today', '');
             setText('pv-tomorrow', '');
@@ -149,9 +194,8 @@ function renderWeatherAndForecast(weather, calculation) {
             var radNum = Number(row.shortwave_radiation_sum_Wh_m2);
             var rad = isFinite(radNum) ? formatNumberDE(radNum, 0) : '';
             var pv = '';
-            if (pvKwp && isFinite(radNum)) {
-                var pvVal = calculatePVEnergy(radNum, pvKwp, pvFactor);
-                pv = pvVal ? formatNumberDE(pvVal, 2) : '';
+            if (typeof row.pv_energy_kwh === 'number') {
+                pv = formatNumberDE(row.pv_energy_kwh, 2);
             }
             tr.innerHTML = '<td>' + (row.date || '') + '</td>' +
                            '<td>' + sun + '</td>' +

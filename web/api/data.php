@@ -25,6 +25,27 @@ $miners = json_read_assoc($minersFile, []);
 $weather = json_read_assoc($weatherFile, []);
 $pv = json_read_assoc($pvFile, []);
 
+// Post-processing: Calculate PV energy for weather data
+function calculatePVEnergy($radiationWh, $pvKwp, $pvFactor) {
+    if (!is_numeric($radiationWh) || !is_numeric($pvKwp) || !is_numeric($pvFactor)) {
+        return null;
+    }
+    return ($radiationWh / 1000) * $pvKwp * $pvFactor;
+}
+
+// Add PV energy calculations to weather data
+if (is_array($weather) && isset($settings['pv_kwp']) && isset($settings['pvSystemFactor'])) {
+    $pvKwp = floatval($settings['pv_kwp']);
+    $pvFactor = floatval($settings['pvSystemFactor']);
+    
+    foreach ($weather as &$day) {
+        if (isset($day['shortwave_radiation_sum_Wh_m2']) && is_numeric($day['shortwave_radiation_sum_Wh_m2'])) {
+            $day['pv_energy_kwh'] = calculatePVEnergy($day['shortwave_radiation_sum_Wh_m2'], $pvKwp, $pvFactor);
+        }
+    }
+    unset($day); // break reference
+}
+
 // fetch dummy calculation
 $calculation = [];
 try {

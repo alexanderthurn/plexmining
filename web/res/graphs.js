@@ -17,17 +17,13 @@ function drawWeatherChart(rows) {
             };
         });
 
-    // If settings available on window (injected via script.js), compute PV energy (kWh) as simple ratio from radiation and pv_kwp
-    var pvKwp = (window.__plexSettings && typeof window.__plexSettings.pv_kwp === 'number') ? window.__plexSettings.pv_kwp : null;
-    var pvFactor = (window.__plexSettings && isFinite(Number(window.__plexSettings.pvSystemFactor))) ? Number(window.__plexSettings.pvSystemFactor) : 0.8;
-    if (pvKwp) {
-        data.forEach(function(d){
-            if (d.valueRad != null) {
-                // Very simple proportional model: kWh = (rad Wh/m2 / 1000) * pv_kwp * pvSystemFactor
-                d.valuePV = calculatePVEnergy(d.valueRad, pvKwp, pvFactor);
-            }
-        });
-    }
+    // PV energy is now calculated server-side in data.php
+    // Map pv_energy_kwh from weather data to chart data
+    data.forEach(function(d, i){
+        if (rows[i] && typeof rows[i].pv_energy_kwh === 'number') {
+            d.valuePV = rows[i].pv_energy_kwh;
+        }
+    });
 
     if (data.length === 0) return;
 
@@ -119,8 +115,9 @@ function drawWeatherChart(rows) {
         .attr('stroke-width', 2)
         .attr('d', lineRad);
 
-    // PV bars
-    if (pvKwp) {
+    // PV bars (show if any PV data exists)
+    var hasPVData = data.some(function(d){ return d.valuePV != null; });
+    if (hasPVData) {
         var pvData = data.filter(function(d){ return d.valuePV != null; });
         if (pvData.length > 0) {
             var barWidth;
@@ -185,7 +182,7 @@ function drawWeatherChart(rows) {
         .attr('fill', '#6c757d').style('font-size', '12px')
         .text('Strahlung');
 
-    if (pvKwp) {
+    if (hasPVData) {
         legend.append('rect')
             .attr('x', 210).attr('y', -8)
             .attr('width', 12).attr('height', 8)
@@ -195,5 +192,138 @@ function drawWeatherChart(rows) {
             .attr('fill', '#6c757d').style('font-size', '12px')
             .text('PV (kWh)');
     }
+}
+
+function drawBatteryDonut(percent, kwh) {
+    var container = document.getElementById('battery-donut');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    var width = 150;
+    var height = 150;
+    var radius = Math.min(width, height) / 2 - 10;
+    
+    var svg = d3.select(container)
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height);
+    
+    var g = svg.append('g')
+        .attr('transform', 'translate(' + width/2 + ',' + height/2 + ')');
+    
+    // Background circle
+    g.append('circle')
+        .attr('r', radius)
+        .attr('fill', '#f8f9fa')
+        .attr('stroke', '#dee2e6')
+        .attr('stroke-width', 2);
+    
+    // Progress arc
+    var arc = d3.arc()
+        .innerRadius(radius - 15)
+        .outerRadius(radius)
+        .startAngle(0);
+    
+    var progressArc = g.append('path')
+        .datum({endAngle: 2 * Math.PI * (percent / 100)})
+        .attr('d', arc)
+        .attr('fill', function() {
+            if (percent < 20) return '#dc3545';
+            if (percent < 50) return '#ffc107';
+            return '#28a745';
+        });
+    
+    // Center text
+    g.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('dy', '-0.3em')
+        .attr('font-size', '24px')
+        .attr('font-weight', 'bold')
+        .text(percent + '%');
+    
+    g.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('dy', '1.2em')
+        .attr('font-size', '12px')
+        .attr('fill', '#6c757d')
+        .text(kwh + ' kWh');
+}
+
+function drawSolarPanel(power) {
+    var container = document.getElementById('solar-panel');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    var width = 150;
+    var height = 120;
+    
+    var svg = d3.select(container)
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height);
+    
+    // Solar panel base
+    var panel = svg.append('g')
+        .attr('transform', 'translate(' + width/2 + ',' + height/2 + ')');
+    
+    // Panel frame
+    panel.append('rect')
+        .attr('x', -60)
+        .attr('y', -30)
+        .attr('width', 120)
+        .attr('height', 60)
+        .attr('fill', '#2c3e50')
+        .attr('stroke', '#34495e')
+        .attr('stroke-width', 2)
+        .attr('rx', 4);
+    
+    // Solar cells (grid)
+    for (var i = 0; i < 4; i++) {
+        for (var j = 0; j < 2; j++) {
+            panel.append('rect')
+                .attr('x', -50 + i * 25)
+                .attr('y', -20 + j * 20)
+                .attr('width', 20)
+                .attr('height', 15)
+                .attr('fill', '#34495e')
+                .attr('stroke', '#2c3e50')
+                .attr('stroke-width', 1);
+        }
+    }
+    
+    // Sun rays
+    var sun = svg.append('g')
+        .attr('transform', 'translate(20, 20)');
+    
+    sun.append('circle')
+        .attr('r', 15)
+        .attr('fill', '#ffd700')
+        .attr('stroke', '#ffed4e')
+        .attr('stroke-width', 2);
+    
+    // Sun rays
+    for (var i = 0; i < 8; i++) {
+        var angle = (i * 45) * Math.PI / 180;
+        var x1 = Math.cos(angle) * 20;
+        var y1 = Math.sin(angle) * 20;
+        var x2 = Math.cos(angle) * 25;
+        var y2 = Math.sin(angle) * 25;
+        
+        sun.append('line')
+            .attr('x1', x1)
+            .attr('y1', y1)
+            .attr('x2', x2)
+            .attr('y2', y2)
+            .attr('stroke', '#ffd700')
+            .attr('stroke-width', 2)
+            .attr('opacity', 0.7);
+    }
+    
+    // Power indicator (glow effect based on power)
+    var intensity = Math.min(power / 5000, 1); // Normalize to 0-1
+    panel.selectAll('rect')
+        .filter(function(d, i) { return i > 0; }) // Skip the frame
+        .attr('fill', d3.interpolate('#34495e', '#3498db')(intensity))
+        .attr('opacity', 0.3 + intensity * 0.7);
 }
 
