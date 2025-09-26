@@ -298,15 +298,15 @@ function renderWeatherAndForecast(weather, calculation) {
 function renderHourlyWeather(hourlyData) {
     if (!Array.isArray(hourlyData)) return;
     
-    // Filter to next 24 hours
+    // Filter to next 3 days (72 hours)
     var now = new Date();
-    var next24Hours = hourlyData.filter(function(hour) {
+    var allHours = hourlyData.filter(function(hour) {
         var hourTime = new Date(hour.datetime);
         var diffHours = (hourTime - now) / (1000 * 60 * 60);
-        return diffHours >= 0 && diffHours <= 24;
-    }).slice(0, 24);
+        return diffHours >= 0 && diffHours <= 72; // Show next 3 days only
+    });
     
-    if (next24Hours.length === 0) return;
+    if (allHours.length === 0) return;
     
     // Helper functions for hourly data
     function sumHoursHourly(arr, hours) {
@@ -344,10 +344,12 @@ function renderHourlyWeather(hourlyData) {
     var tbody = document.getElementById('weather-hourly-table-body');
     if (tbody) {
         tbody.innerHTML = '';
-        next24Hours.forEach(function(hour) {
+        allHours.forEach(function(hour) {
             var tr = document.createElement('tr');
             var time = new Date(hour.datetime);
-            var timeStr = time.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+            var timeStr = allHours.length > 24 
+                ? time.toLocaleString('de-DE', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                : time.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
             var sunshine = hour.sunshine_duration ? formatNumberDE(hour.sunshine_duration / 3600, 2) : '0';
                 var radiation = hour.global_tilted_irradiance ? formatNumberDE(hour.global_tilted_irradiance, 0) : '0';
                 var direct = '0'; // No longer available with new API
@@ -367,7 +369,7 @@ function renderHourlyWeather(hourlyData) {
     // Draw hourly chart
     try {
         if (typeof d3 !== 'undefined' && typeof drawHourlyWeatherChart === 'function') {
-            drawHourlyWeatherChart(next24Hours);
+            drawHourlyWeatherChart(allHours);
         }
     } catch (e) { /* no-op */ }
 }

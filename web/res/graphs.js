@@ -247,11 +247,28 @@ function drawHourlyWeatherChart(hourlyData) {
         .style('pointer-events', 'none');
 
     // Axes
+    var dataCount = data.length;
+    var tickFormat = dataCount > 24 ? d3.timeFormat('%d.%m. %H:%M') : d3.timeFormat('%H:%M');
+    var ticks = dataCount > 48 
+        ? data
+            .filter(function(d, i) { return i % Math.max(1, Math.floor(dataCount / 4)) === 0; })
+            .map(function(d){ return d.datetime; })
+        : (dataCount > 24 
+            ? data
+                .filter(function(d, i) { return i % Math.max(1, Math.floor(dataCount / 8)) === 0; })
+                .map(function(d){ return d.datetime; })
+            : data.map(function(d){ return d.datetime; }));
+    
     g.append('g')
         .attr('transform', 'translate(0,' + innerHeight + ')')
         .call(d3.axisBottom(x)
-            .tickFormat(d3.timeFormat('%H:%M'))
-            .tickValues(data.map(function(d){ return d.datetime; })));
+            .tickFormat(tickFormat)
+            .tickValues(ticks)
+            .tickSizeOuter(0))
+        .selectAll('text')
+        .style('text-anchor', 'middle')
+        .attr('dx', '-0.75em')
+        .attr('dy', '1em');
 
     g.append('g')
         .call(d3.axisLeft(y).ticks(5));
@@ -305,20 +322,33 @@ function drawHourlyWeatherChart(hourlyData) {
             tooltip.transition().duration(500).style('opacity', 0);
         });
 
-    // Add text labels on bars (only if bar is tall enough)
-    g.selectAll('text.bar-label')
-        .data(data.filter(function(d){ return (innerHeight - y(d.valuePV)) > 20; }))
-        .enter()
-        .append('text')
-        .attr('class', 'bar-label')
-        .attr('x', function(d){ return x(d.datetime) + barWidth/2; })
-        .attr('y', function(d){ return y(d.valuePV) - 5; })
-        .attr('text-anchor', 'middle')
-        .style('font-size', '9px')
-        .style('font-weight', 'bold')
-        .style('fill', '#000000')
-        .style('text-shadow', '1px 1px 2px rgba(255,255,255,0.8)')
-        .text(function(d){ return formatNumberDE(d.valuePV, 1) + ' kWh'; });
+    // Find maximum value for reference line
+    var maxValue = d3.max(data, function(d){ return d.valuePV; });
+    
+    if (maxValue > 0) {
+        // Max reference line
+        g.append('line')
+            .attr('class', 'reference-line max-line')
+            .attr('x1', 0)
+            .attr('x2', innerWidth)
+            .attr('y1', y(maxValue))
+            .attr('y2', y(maxValue))
+            .attr('stroke', '#198754')
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '5,5');
+
+        // Max reference label
+        g.append('text')
+            .attr('class', 'reference-label max-label')
+            .attr('x', innerWidth - 5)
+            .attr('y', y(maxValue) - 5)
+            .attr('text-anchor', 'end')
+            .style('font-size', '10px')
+            .style('font-weight', 'bold')
+            .style('fill', '#198754')
+            .style('text-shadow', '1px 1px 2px rgba(255,255,255,0.8)')
+            .text('Max: ' + formatNumberDE(maxValue, 1) + ' kWh');
+    }
 }
 
 function drawBatteryDonut(percent, kwh) {
