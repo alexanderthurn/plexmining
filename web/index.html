@@ -28,7 +28,7 @@
                                     <div class="mt-2">
                                         <small class="text-muted"><span id="batterie-current"></span> kWh</small><br>
                                         <small class="text-muted">> <span id="mining-min-battery"></span> kWh</small><br>
-                                        <small class="text-muted">Mining möglich: <span id="mining-status"></span></small>
+                                        <small class="text-muted">Für Mining verfügbar: <span id="mining-status"></span></small>
                                     </div>
                                 </div>
                             </div>
@@ -48,7 +48,7 @@
             <div class="col-md-6">
                 <div class="card same-height">
                     <div class="card-body">
-                        <h5 class="card-title">Wetter & Prognose <small class="text-muted float-end" id="ts-weather"></small></h5>
+                        <h5 class="card-title">14 Tage Wetter & Prognose <small class="text-muted float-end" id="ts-weather"></small></h5>
                         <div class="d-flex">
                             <div class="flex-grow-1">
                                 <div class="table-responsive">
@@ -120,6 +120,54 @@
                 </div>
             </div>
 
+        </section>
+
+        <!-- Stündliche Wetter-Sektion -->
+        <section class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">24h Wetter & Prognose <small class="text-muted float-end" id="ts-weather-hourly"></small></h5>
+                        <div class="row">
+                            <div class="col-12">
+                                <div id="weather-hourly-chart" style="width: 100%; height: 300px;"></div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="accordion" id="weatherHourlyAccordion">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#weatherHourlyTable" aria-expanded="false" aria-controls="weatherHourlyTable">
+                                                Stündliche Details anzeigen
+                                            </button>
+                                        </h2>
+                                        <div id="weatherHourlyTable" class="accordion-collapse collapse" data-bs-parent="#weatherHourlyAccordion">
+                                            <div class="accordion-body">
+                                                <div class="table-responsive">
+                                                    <table class="table table-sm" id="weather-hourly-table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th scope="col">Zeit</th>
+                                                                <th scope="col">Sonnenstunden</th>
+                                                             <th scope="col">Strahlung (W/m²)</th>
+                                                             <th scope="col">Direktstrahlung (W/m²)</th>
+                                                                <th scope="col">Bewölkung (%)</th>
+                                                                <th scope="col">PV-Ertrag (kWh)</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="weather-hourly-table-body"></tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <section class="row">

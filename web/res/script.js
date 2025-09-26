@@ -64,17 +64,25 @@ function fetchAndRenderMiners() {
             if (data && data.pv) {
                 renderPV(data.pv);
             }
-            if (data && (data.weather || data.calculation)) {
-                renderWeatherAndForecast(data.weather, data.calculation);
+            if (data && (data.weather_daily || data.calculation)) {
+                // Pass aggregations to the weather function
+                if (data.weather_aggregations) {
+                    window.weatherAggregations = data.weather_aggregations;
+                }
+                renderWeatherAndForecast(data.weather_daily, data.calculation);
+            }
+            if (data && data.weather_hourly) {
+                renderHourlyWeather(data.weather_hourly);
             }
             // Last update timestamps: show relative age (< 7d) or date; color if >24h (warning) or >48h (danger)
             if (data && data.mtimes) {
                 setRelativeTimestamp('ts-pv', data.mtimes.pv);
-                setRelativeTimestamp('ts-weather', data.mtimes.weather);
+                setRelativeTimestamp('ts-weather', data.mtimes.weather_daily);
                 setRelativeTimestamp('ts-miners', data.mtimes.miners);
                 setRelativeTimestamp('ts-system', data.mtimes.settings);
                 setRelativeTimestamp('ts-economy', data.mtimes.pv);
-                setRelativeTimestamp('ts-forecast', data.mtimes.weather);
+                setRelativeTimestamp('ts-forecast', data.mtimes.weather_daily);
+                setRelativeTimestamp('ts-weather-hourly', data.mtimes.weather_hourly);
             }
             setText('last-update', new Date().toISOString());
         })
@@ -90,91 +98,143 @@ function fetchAndRenderMiners() {
 function renderPV(pv) {
     if (!pv) return;
     
-    // PV Leistung
-    var pvPower = typeof pv.pv_leistung_w !== 'undefined' ? pv.pv_leistung_w : 0;
-    setText('pv-leistung', formatNumberDE(pvPower, 0));
-    
-    // Batterie
-    var batteryKwh = pv.batterie_stand && typeof pv.batterie_stand.kwh !== 'undefined' ? pv.batterie_stand.kwh : 0;
-    var batteryPercent = pv.batterie_stand && typeof pv.batterie_stand.percent !== 'undefined' ? pv.batterie_stand.percent : 0;
-    var batteryCapacity = pv.batterie_stand && typeof pv.batterie_stand.capacity_kwh !== 'undefined' ? pv.batterie_stand.capacity_kwh : 49.9;
-    setText('batterie-kwh', formatNumberDE(batteryCapacity, 1));
-    
-    
-    // Aktuelle Batteriekapazität anzeigen
-    setText('batterie-current', formatNumberDE(batteryKwh, 1));
-    
-    // Mining-Status prüfen und verfügbare Leistung anzeigen
-    var miningMinBattery = (window.__plexSettings && typeof window.__plexSettings.miningMinBatteryKwh !== 'undefined') ? window.__plexSettings.miningMinBatteryKwh : 15.0;
-    setText('mining-min-battery', formatNumberDE(miningMinBattery, 1));
-    
-    var miningPossible = batteryKwh >= miningMinBattery;
-    var batteryDifference = batteryKwh - miningMinBattery;
-    var hausLast = typeof pv.haus_last_w !== 'undefined' ? pv.haus_last_w : 0;
-    var availablePower = pvPower - hausLast;
-    
-    var miningStatusText = miningPossible ? 'Ja, ' + formatNumberDE(batteryDifference, 1) + ' kWh' : 'Nein';
-    var miningStatusClass = miningPossible ? 'text-success' : 'text-danger';
-    var miningStatusEl = document.getElementById('mining-status');
-    if (miningStatusEl) {
-        miningStatusEl.textContent = miningStatusText;
-        miningStatusEl.className = 'fw-bold ' + miningStatusClass;
+    // Check if we have server-calculated values
+    if (pv.calculated) {
+        // Use pre-calculated server-side values (already formatted in German locale)
+        setText('pv-leistung', pv.calculated.formatted_pv_power);
+        setText('batterie-kwh', pv.calculated.formatted_battery_capacity);
+        setText('batterie-current', pv.calculated.formatted_battery_kwh);
+        setText('mining-min-battery', pv.calculated.formatted_mining_min_battery);
+        
+        // Mining status
+        var miningStatusEl = document.getElementById('mining-status');
+        if (miningStatusEl) {
+            miningStatusEl.textContent = pv.calculated.miningStatusText;
+            miningStatusEl.className = 'fw-bold ' + pv.calculated.miningStatusClass;
+        }
+        
+        // Power values
+        setText('haus-last', pv.calculated.formatted_haus_last);
+        setText('available-power', pv.calculated.formatted_available_power);
+        
+        // Draw charts using original values (not formatted)
+        var batteryKwh = pv.batterie_stand && typeof pv.batterie_stand.kwh !== 'undefined' ? pv.batterie_stand.kwh : 0;
+        var batteryPercent = pv.batterie_stand && typeof pv.batterie_stand.percent !== 'undefined' ? pv.batterie_stand.percent : 0;
+        var pvPower = typeof pv.pv_leistung_w !== 'undefined' ? pv.pv_leistung_w : 0;
+        
+        try {
+            if (typeof d3 !== 'undefined') {
+                if (typeof drawBatteryDonut === 'function') {
+                    drawBatteryDonut(batteryPercent, batteryKwh);
+                }
+                if (typeof drawSolarPanel === 'function') {
+                    drawSolarPanel(pvPower);
+                }
+            }
+        } catch (e) { /* no-op */ }
+    } else {
+        // Fallback: Original logic if no server calculations available
+        function formatNumberDE(value, decimals) {
+            return typeof value === 'number' ? value.toFixed(decimals).replace('.', ',') : value;
+        }
+        
+        var pvPower = typeof pv.pv_leistung_w !== 'undefined' ? pv.pv_leistung_w : 0;
+        setText('pv-leistung', formatNumberDE(pvPower, 0));
+        
+        var batteryKwh = pv.batterie_stand && typeof pv.batterie_stand.kwh !== 'undefined' ? pv.batterie_stand.kwh : 0;
+        var batteryPercent = pv.batterie_stand && typeof pv.batterie_stand.percent !== 'undefined' ? pv.batterie_stand.percent : 0;
+        var batteryCapacity = pv.batterie_stand && typeof pv.batterie_stand.capacity_kwh !== 'undefined' ? pv.batterie_stand.capacity_kwh : 49.9;
+        setText('batterie-kwh', formatNumberDE(batteryCapacity, 1));
+        setText('batterie-current', formatNumberDE(batteryKwh, 1));
+        
+        var miningMinBattery = (window.__plexSettings && typeof window.__plexSettings.miningMinBatteryKwh !== 'undefined') ? window.__plexSettings.miningMinBatteryKwh : 15.0;
+        setText('mining-min-battery', formatNumberDE(miningMinBattery, 1));
+        
+        var miningPossible = batteryKwh >= miningMinBattery;
+        var hausLast = typeof pv.haus_last_w !== 'undefined' ? pv.haus_last_w : 0;
+        var availablePower = pvPower - hausLast;
+        
+        var miningStatusText = miningPossible ? formatNumberDE(batteryKwh - miningMinBattery, 1) + ' kWh' : 'nix';
+        var miningStatusClass = miningPossible ? 'text-success' : 'text-danger';
+        var miningStatusEl = document.getElementById('mining-status');
+        if (miningStatusEl) {
+            miningStatusEl.textContent = miningStatusText;
+            miningStatusEl.className = 'fw-bold ' + miningStatusClass;
+        }
+        
+        setText('haus-last', formatNumberDE(hausLast, 0));
+        setText('available-power', formatNumberDE(availablePower, 0));
+        
+        try {
+            if (typeof d3 !== 'undefined') {
+                if (typeof drawBatteryDonut === 'function') {
+                    drawBatteryDonut(batteryPercent, batteryKwh);
+                }
+                if (typeof drawSolarPanel === 'function') {
+                    drawSolarPanel(pvPower);
+                }
+            }
+        } catch (e) { /* no-op */ }
     }
     
-    // Hauslast und verfügbare Leistung anzeigen
-    setText('haus-last', formatNumberDE(hausLast, 0));
-    setText('available-power', formatNumberDE(availablePower, 0));
     if (Array.isArray(pv.miner_betriebszeiten)) {
         setText('miner-betriebszeiten', pv.miner_betriebszeiten.join(', '));
     }
-    
-    // Draw charts
-    try {
-        if (typeof d3 !== 'undefined') {
-            if (typeof drawBatteryDonut === 'function') {
-                drawBatteryDonut(batteryPercent, batteryKwh);
-            }
-            if (typeof drawSolarPanel === 'function') {
-                drawSolarPanel(pvPower);
-            }
-        }
-    } catch (e) { /* no-op */ }
 }
 
 function renderWeatherAndForecast(weather, calculation) {
-    // Aggregate sunshine hours
-    // sumHours and sumRadiation moved to helper.js
     if (Array.isArray(weather)) {
-        // Today is first entry, tomorrow is second
-        setText('sun-today', formatNumberDE(sumHours(weather, 1), 2));
-        setText('sun-tomorrow', formatNumberDE(sumHours(weather.slice(1), 1), 2));
-        setText('sun-7d', formatNumberDE(sumHours(weather, 7), 2));
-        setText('sun-14d', formatNumberDE(sumHours(weather, 14), 2));
-        setText('rad-today', formatNumberDE(sumRadiation(weather, 1), 0));
-        setText('rad-tomorrow', formatNumberDE(sumRadiation(weather.slice(1), 1), 0));
-        setText('rad-7d', formatNumberDE(sumRadiation(weather, 7), 0));
-        setText('rad-14d', formatNumberDE(sumRadiation(weather, 14), 0));
-
-        // PV energy is now calculated server-side in data.php
-        var pvKwp = (window.__plexSettings && typeof window.__plexSettings.pv_kwp === 'number') ? window.__plexSettings.pv_kwp : null;
-        if (pvKwp) {
-            var sumPV = function(arr, n) {
-                var s = 0; var count = Math.min(n, arr.length);
-                for (var i = 0; i < count; i++) {
-                    var v = arr[i] && typeof arr[i].pv_energy_kwh === 'number' ? arr[i].pv_energy_kwh : 0;
-                    s += v;
-                }
-                return Math.round(s * 100) / 100;
-            };
-            setText('pv-today', formatNumberDE(sumPV(weather, 1), 2));
-            setText('pv-tomorrow', formatNumberDE(sumPV(weather.slice(1), 1), 2));
-            setText('pv-7d', formatNumberDE(sumPV(weather, 7), 2));
-            setText('pv-14d', formatNumberDE(sumPV(weather, 14), 2));
+        // First check global weather_aggregations for server calculations
+        // (Structure passed from main fetch via window variable)
+        if (window.weatherAggregations) {
+            var agg = window.weatherAggregations;
+            // Use server-calculated values (already formatted in German locale)
+            setText('sun-today', agg.today ? agg.today.sunshine_hours : '0,00');
+            setText('sun-tomorrow', agg.tomorrow ? agg.tomorrow.sunshine_hours : '0,00');
+            setText('sun-7d', agg['7d'] ? agg['7d'].sunshine_hours : '0,00');
+            setText('sun-14d', agg['14d'] ? agg['14d'].sunshine_hours : '0,00');
+            
+            setText('rad-today', agg.today ? agg.today.radiation_sum : '0');
+            setText('rad-tomorrow', agg.tomorrow ? agg.tomorrow.radiation_sum : '0');
+            setText('rad-7d', agg['7d'] ? agg['7d'].radiation_sum : '0');
+            setText('rad-14d', agg['14d'] ? agg['14d'].radiation_sum : '0');
+            
+            setText('pv-today', agg.today ? agg.today.pv_energy : '0,00');
+            setText('pv-tomorrow', agg.tomorrow ? agg.tomorrow.pv_energy : '0,00');
+            setText('pv-7d', agg['7d'] ? agg['7d'].pv_energy : '0,00');
+            setText('pv-14d', agg['14d'] ? agg['14d'].pv_energy : '0,00');
         } else {
-            setText('pv-today', '');
-            setText('pv-tomorrow', '');
-            setText('pv-7d', '');
-            setText('pv-14d', '');
+            // Fallback: Use JavaScript calculations if no server calculations
+            setText('sun-today', formatNumberDE(sumHours(weather, 1), 2));
+            setText('sun-tomorrow', formatNumberDE(sumHours(weather.slice(1), 1), 2));
+            setText('sun-7d', formatNumberDE(sumHours(weather, 7), 2));
+            setText('sun-14d', formatNumberDE(sumHours(weather, 14), 2));
+            setText('rad-today', formatNumberDE(sumRadiation(weather, 1), 0));
+            setText('rad-tomorrow', formatNumberDE(sumRadiation(weather.slice(1), 1), 0));
+            setText('rad-7d', formatNumberDE(sumRadiation(weather, 7), 0));
+            setText('rad-14d', formatNumberDE(sumRadiation(weather, 14), 0));
+
+            // PV energy calculations
+            var pvKwp = (window.__plexSettings && typeof window.__plexSettings.pv_kwp === 'number') ? window.__plexSettings.pv_kwp : null;
+            if (pvKwp) {
+                var sumPV = function(arr, n) {
+                    var s = 0; var count = Math.min(n, arr.length);
+                    for (var i = 0; i < count; i++) {
+                        var v = arr[i] && typeof arr[i].pv_energy_kwh === 'number' ? arr[i].pv_energy_kwh : 0;
+                        s += v;
+                    }
+                    return Math.round(s * 100) / 100;
+                };
+                setText('pv-today', formatNumberDE(sumPV(weather, 1), 2));
+                setText('pv-tomorrow', formatNumberDE(sumPV(weather.slice(1), 1), 2));
+                setText('pv-7d', formatNumberDE(sumPV(weather, 7), 2));
+                setText('pv-14d', formatNumberDE(sumPV(weather, 14), 2));
+            } else {
+                setText('pv-today', '');
+                setText('pv-tomorrow', '');
+                setText('pv-7d', '');
+                setText('pv-14d', '');
+            }
         }
     }
     // Render compact weather table
@@ -210,6 +270,85 @@ function renderWeatherAndForecast(weather, calculation) {
         if (typeof d3 !== 'undefined' && typeof drawWeatherChart === 'function') {
             drawWeatherChart(weather || []);
         }
+    } catch (e) { 
+        console.error('Weather chart error:', e); 
+    }
+}
+
+function renderHourlyWeather(hourlyData) {
+    if (!Array.isArray(hourlyData)) return;
+    
+    // Filter to next 24 hours
+    var now = new Date();
+    var next24Hours = hourlyData.filter(function(hour) {
+        var hourTime = new Date(hour.datetime);
+        var diffHours = (hourTime - now) / (1000 * 60 * 60);
+        return diffHours >= 0 && diffHours <= 24;
+    }).slice(0, 24);
+    
+    if (next24Hours.length === 0) return;
+    
+    // Helper functions for hourly data
+    function sumHoursHourly(arr, hours) {
+        var sum = 0;
+        var count = Math.min(hours, arr.length);
+        for (var i = 0; i < count; i++) {
+            var duration = arr[i] && typeof arr[i].sunshine_duration === 'number' ? arr[i].sunshine_duration : 0;
+            sum += duration / 3600; // Convert seconds to hours
+        }
+        return Math.round(sum * 100) / 100;
+    }
+    
+        function sumRadiationHourly(arr, hours) {
+            var sum = 0;
+            var count = Math.min(hours, arr.length);
+            for (var i = 0; i < count; i++) {
+                var rad = arr[i] && typeof arr[i].global_tilted_irradiance === 'number' ? arr[i].global_tilted_irradiance : 0;
+                sum += rad;
+            }
+            return Math.round(sum);
+        }
+    
+    function sumPVHourly(arr, hours) {
+        var sum = 0;
+        var count = Math.min(hours, arr.length);
+        for (var i = 0; i < count; i++) {
+            var pv = arr[i] && typeof arr[i].pv_energy_kwh === 'number' ? arr[i].pv_energy_kwh : 0;
+            sum += pv;
+        }
+        return Math.round(sum * 100) / 100;
+    }
+    
+    
+    // Render hourly table
+    var tbody = document.getElementById('weather-hourly-table-body');
+    if (tbody) {
+        tbody.innerHTML = '';
+        next24Hours.forEach(function(hour) {
+            var tr = document.createElement('tr');
+            var time = new Date(hour.datetime);
+            var timeStr = time.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+            var sunshine = hour.sunshine_duration ? formatNumberDE(hour.sunshine_duration / 3600, 2) : '0';
+                var radiation = hour.global_tilted_irradiance ? formatNumberDE(hour.global_tilted_irradiance, 0) : '0';
+                var direct = '0'; // No longer available with new API
+            var cloudcover = hour.cloudcover ? formatNumberDE(hour.cloudcover, 0) : '0';
+            var pv = hour.pv_energy_kwh ? formatNumberDE(hour.pv_energy_kwh, 2) : '0';
+            
+            tr.innerHTML = '<td>' + timeStr + '</td>' +
+                          '<td>' + sunshine + '</td>' +
+                          '<td>' + radiation + '</td>' +
+                          '<td>' + direct + '</td>' +
+                          '<td>' + cloudcover + '</td>' +
+                          '<td>' + pv + '</td>';
+            tbody.appendChild(tr);
+        });
+    }
+    
+    // Draw hourly chart
+    try {
+        if (typeof d3 !== 'undefined' && typeof drawHourlyWeatherChart === 'function') {
+            drawHourlyWeatherChart(next24Hours);
+        }
     } catch (e) { /* no-op */ }
 }
 
@@ -228,7 +367,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const apiButton = document.getElementById('api-button');
     if (apiButton) {
         apiButton.addEventListener('click', function() {
-            fetchData(apiUrl);
+    fetchData(apiUrl);
         });
     }
 });

@@ -7,7 +7,8 @@ $lat = 50.7374;
 $lon = 7.0982;
 $days = 14;
 $timezone = 'Europe/Berlin';
-$dataFile = '../data/config/weather.json';
+$dailyDataFile = '../data/config/weather-daily.json';
+$hourlyDataFile = '../data/config/weather-hourly.json';
 
 // Controls
 $force = isset($_GET['force']) && ($_GET['force'] === 'true' || $_GET['force'] === '1');
@@ -25,24 +26,33 @@ function json_write_atomic(string $path, $data): void {
     rename($tmp, $path);
 }
 
-// Check freshness of existing file
-if (!$force && is_file($dataFile)) {
-    $ageSeconds = time() - filemtime($dataFile);
-    if ($ageSeconds < ($maxAgeMinutes * 60)) {
-        echo json_encode([
-            'ok' => true,
-            'skipped' => true,
-            'reason' => 'cache_fresh',
-            'age_seconds' => $ageSeconds,
-            'max_age_seconds' => $maxAgeMinutes * 60
-        ], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
-        exit;
-    }
+// Check freshness of existing files
+$dailyAge = is_file($dailyDataFile) ? time() - filemtime($dailyDataFile) : PHP_INT_MAX;
+$hourlyAge = is_file($hourlyDataFile) ? time() - filemtime($hourlyDataFile) : PHP_INT_MAX;
+
+if (!$force && $dailyAge < ($maxAgeMinutes * 60) && $hourlyAge < ($maxAgeMinutes * 60)) {
+    echo json_encode([
+        'ok' => true,
+        'skipped' => true,
+        'reason' => 'cache_fresh',
+        'daily_age_seconds' => $dailyAge,
+        'hourly_age_seconds' => $hourlyAge,
+        'max_age_seconds' => $maxAgeMinutes * 60
+    ], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
+    exit;
 }
 
-// Build URL
-$url = sprintf(
+// Build URLs for both daily and hourly data
+$dailyUrl = sprintf(
     'https://api.open-meteo.com/v1/forecast?latitude=%s&longitude=%s&daily=sunshine_duration,shortwave_radiation_sum&timezone=%s&forecast_days=%d',
+    rawurlencode((string)$lat),
+    rawurlencode((string)$lon),
+    rawurlencode($timezone),
+    $days
+);
+
+$hourlyUrl = sprintf(
+    'https://api.open-meteo.com/v1/forecast?latitude=%s&longitude=%s&hourly=global_tilted_irradiance&tilt=30&azimuth=0&timezone=%s&forecast_days=%d',
     rawurlencode((string)$lat),
     rawurlencode((string)$lon),
     rawurlencode($timezone),
@@ -72,45 +82,77 @@ function http_get_json(string $url) {
     return [$decoded, 200, null];
 }
 
-[$json, $code, $error] = http_get_json($url);
-if (!is_array($json) || $code !== 200) {
+// Fetch daily data
+[$dailyJson, $dailyCode, $dailyError] = http_get_json($dailyUrl);
+if (!is_array($dailyJson) || $dailyCode !== 200) {
     http_response_code(502);
-    echo json_encode(['error' => 'fetch_failed', 'http_code' => $code, 'message' => $error], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
+    echo json_encode(['error' => 'daily_fetch_failed', 'http_code' => $dailyCode, 'message' => $dailyError], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
     exit;
 }
 
-// Validate format
-if (!isset($json['daily']['time']) || !is_array($json['daily']['time'])) {
+// Fetch hourly data
+[$hourlyJson, $hourlyCode, $hourlyError] = http_get_json($hourlyUrl);
+if (!is_array($hourlyJson) || $hourlyCode !== 200) {
+    http_response_code(502);
+    echo json_encode(['error' => 'hourly_fetch_failed', 'http_code' => $hourlyCode, 'message' => $hourlyError], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+// Validate daily format
+if (!isset($dailyJson['daily']['time']) || !is_array($dailyJson['daily']['time'])) {
     http_response_code(500);
-    echo json_encode(['error' => 'unexpected_format', 'details' => 'missing daily.time'], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
+    echo json_encode(['error' => 'unexpected_daily_format', 'details' => 'missing daily.time'], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
     exit;
 }
 
-// Transform to compact array like CSV headings from the bash script
-$times = $json['daily']['time'];
-$sunshine = $json['daily']['sunshine_duration'] ?? [];
-$shortwave = $json['daily']['shortwave_radiation_sum'] ?? [];
+// Validate hourly format
+if (!isset($hourlyJson['hourly']['time']) || !is_array($hourlyJson['hourly']['time'])) {
+    http_response_code(500);
+    echo json_encode(['error' => 'unexpected_hourly_format', 'details' => 'missing hourly.time'], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
+    exit;
+}
 
-$out = [];
-for ($i = 0; $i < count($times); $i++) {
-    $date = $times[$i] ?? null;
-    $s = $sunshine[$i] ?? null; // seconds
-    $r = $shortwave[$i] ?? null; // Wh/m2
+// Transform daily data
+$dailyTimes = $dailyJson['daily']['time'];
+$dailySunshine = $dailyJson['daily']['sunshine_duration'] ?? [];
+$dailyShortwave = $dailyJson['daily']['shortwave_radiation_sum'] ?? [];
+
+$dailyOut = [];
+for ($i = 0; $i < count($dailyTimes); $i++) {
+    $date = $dailyTimes[$i] ?? null;
+    $s = $dailySunshine[$i] ?? null; // seconds
+    $r = $dailyShortwave[$i] ?? null; // Wh/m2
     $sunHours = null;
     if ($s !== null) {
         // Convert seconds to hours, round to 2 decimals similar to script
         $sunHours = round(($s / 3600), 2);
     }
-    $out[] = [
+    $dailyOut[] = [
         'date' => $date,
         'sunshine_hours' => $sunHours,
         'shortwave_radiation_sum_Wh_m2' => $r,
     ];
 }
 
-// Write atomically
+// Transform hourly data
+$hourlyTimes = $hourlyJson['hourly']['time'];
+$hourlyTiltedIrradiance = $hourlyJson['hourly']['global_tilted_irradiance'] ?? [];
+
+$hourlyOut = [];
+for ($i = 0; $i < count($hourlyTimes); $i++) {
+    $datetime = $hourlyTimes[$i] ?? null;
+    $tiltedIrradiance = $hourlyTiltedIrradiance[$i] ?? null;
+    
+    $hourlyOut[] = [
+        'datetime' => $datetime,
+        'global_tilted_irradiance' => $tiltedIrradiance,
+    ];
+}
+
+// Write both files atomically
 try {
-    json_write_atomic($dataFile, $out);
+    json_write_atomic($dailyDataFile, $dailyOut);
+    json_write_atomic($hourlyDataFile, $hourlyOut);
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['error' => 'write_failed', 'message' => $e->getMessage()], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
@@ -120,8 +162,10 @@ try {
 echo json_encode([
     'ok' => true,
     'updated' => true,
-    'count' => count($out),
-    'file' => basename($dataFile),
+    'daily_count' => count($dailyOut),
+    'hourly_count' => count($hourlyOut),
+    'daily_file' => basename($dailyDataFile),
+    'hourly_file' => basename($hourlyDataFile),
     'max_age_minutes' => $maxAgeMinutes,
     'forced' => $force,
     'source' => 'open-meteo'

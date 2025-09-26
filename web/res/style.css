@@ -102,3 +102,11 @@ body {
 .badge {
     font-size: 0.75em;
 }
+
+
+
+
+#weather-chart {
+    width: 100%;
+    max-width: 100%;
+}

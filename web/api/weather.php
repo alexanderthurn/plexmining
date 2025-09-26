@@ -2,8 +2,6 @@
 
 header('Content-Type: application/json');
 
-$dataFile = '../data/config/weather.json';
-
 function json_read(string $path, array $default = []): array {
     if (!is_file($path)) return $default;
     $content = file_get_contents($path);
@@ -12,7 +10,17 @@ function json_read(string $path, array $default = []): array {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    echo json_encode(json_read($dataFile), JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
+    $type = $_GET['type'] ?? 'daily';
+    
+    if ($type === 'hourly') {
+        $dataFile = '../data/config/weather-hourly.json';
+        $data = json_read($dataFile);
+    } else {
+        $dataFile = '../data/config/weather-daily.json';
+        $data = json_read($dataFile);
+    }
+    
+    echo json_encode($data, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
     exit;
 }
 

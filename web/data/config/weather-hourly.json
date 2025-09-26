@@ -1,0 +1,1346 @@
+[
+    {
+        "datetime": "2025-09-25T00:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-25T01:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-25T02:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-25T03:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-25T04:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-25T05:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-25T06:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-25T07:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-25T08:00",
+        "global_tilted_irradiance": 5.7
+    },
+    {
+        "datetime": "2025-09-25T09:00",
+        "global_tilted_irradiance": 8.5
+    },
+    {
+        "datetime": "2025-09-25T10:00",
+        "global_tilted_irradiance": 14.3
+    },
+    {
+        "datetime": "2025-09-25T11:00",
+        "global_tilted_irradiance": 27.8
+    },
+    {
+        "datetime": "2025-09-25T12:00",
+        "global_tilted_irradiance": 22.9
+    },
+    {
+        "datetime": "2025-09-25T13:00",
+        "global_tilted_irradiance": 19.1
+    },
+    {
+        "datetime": "2025-09-25T14:00",
+        "global_tilted_irradiance": 23.8
+    },
+    {
+        "datetime": "2025-09-25T15:00",
+        "global_tilted_irradiance": 15.3
+    },
+    {
+        "datetime": "2025-09-25T16:00",
+        "global_tilted_irradiance": 12.4
+    },
+    {
+        "datetime": "2025-09-25T17:00",
+        "global_tilted_irradiance": 17.2
+    },
+    {
+        "datetime": "2025-09-25T18:00",
+        "global_tilted_irradiance": 10.5
+    },
+    {
+        "datetime": "2025-09-25T19:00",
+        "global_tilted_irradiance": 5.7
+    },
+    {
+        "datetime": "2025-09-25T20:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-25T21:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-25T22:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-25T23:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-26T00:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-26T01:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-26T02:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-26T03:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-26T04:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-26T05:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-26T06:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-26T07:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-26T08:00",
+        "global_tilted_irradiance": 7.6
+    },
+    {
+        "datetime": "2025-09-26T09:00",
+        "global_tilted_irradiance": 133.3
+    },
+    {
+        "datetime": "2025-09-26T10:00",
+        "global_tilted_irradiance": 334.3
+    },
+    {
+        "datetime": "2025-09-26T11:00",
+        "global_tilted_irradiance": 522.1
+    },
+    {
+        "datetime": "2025-09-26T12:00",
+        "global_tilted_irradiance": 606.8
+    },
+    {
+        "datetime": "2025-09-26T13:00",
+        "global_tilted_irradiance": 257.1
+    },
+    {
+        "datetime": "2025-09-26T14:00",
+        "global_tilted_irradiance": 158
+    },
+    {
+        "datetime": "2025-09-26T15:00",
+        "global_tilted_irradiance": 166.9
+    },
+    {
+        "datetime": "2025-09-26T16:00",
+        "global_tilted_irradiance": 149.8
+    },
+    {
+        "datetime": "2025-09-26T17:00",
+        "global_tilted_irradiance": 46.3
+    },
+    {
+        "datetime": "2025-09-26T18:00",
+        "global_tilted_irradiance": 12.4
+    },
+    {
+        "datetime": "2025-09-26T19:00",
+        "global_tilted_irradiance": 18
+    },
+    {
+        "datetime": "2025-09-26T20:00",
+        "global_tilted_irradiance": 0.9
+    },
+    {
+        "datetime": "2025-09-26T21:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-26T22:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-26T23:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-27T00:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-27T01:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-27T02:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-27T03:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-27T04:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-27T05:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-27T06:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-27T07:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-27T08:00",
+        "global_tilted_irradiance": 1.9
+    },
+    {
+        "datetime": "2025-09-27T09:00",
+        "global_tilted_irradiance": 29.8
+    },
+    {
+        "datetime": "2025-09-27T10:00",
+        "global_tilted_irradiance": 300.8
+    },
+    {
+        "datetime": "2025-09-27T11:00",
+        "global_tilted_irradiance": 503.1
+    },
+    {
+        "datetime": "2025-09-27T12:00",
+        "global_tilted_irradiance": 623.3
+    },
+    {
+        "datetime": "2025-09-27T13:00",
+        "global_tilted_irradiance": 766.8
+    },
+    {
+        "datetime": "2025-09-27T14:00",
+        "global_tilted_irradiance": 777.3
+    },
+    {
+        "datetime": "2025-09-27T15:00",
+        "global_tilted_irradiance": 712
+    },
+    {
+        "datetime": "2025-09-27T16:00",
+        "global_tilted_irradiance": 548.3
+    },
+    {
+        "datetime": "2025-09-27T17:00",
+        "global_tilted_irradiance": 283.3
+    },
+    {
+        "datetime": "2025-09-27T18:00",
+        "global_tilted_irradiance": 126.6
+    },
+    {
+        "datetime": "2025-09-27T19:00",
+        "global_tilted_irradiance": 88
+    },
+    {
+        "datetime": "2025-09-27T20:00",
+        "global_tilted_irradiance": 1.9
+    },
+    {
+        "datetime": "2025-09-27T21:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-27T22:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-27T23:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-28T00:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-28T01:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-28T02:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-28T03:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-28T04:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-28T05:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-28T06:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-28T07:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-28T08:00",
+        "global_tilted_irradiance": 8.7
+    },
+    {
+        "datetime": "2025-09-28T09:00",
+        "global_tilted_irradiance": 106
+    },
+    {
+        "datetime": "2025-09-28T10:00",
+        "global_tilted_irradiance": 322.1
+    },
+    {
+        "datetime": "2025-09-28T11:00",
+        "global_tilted_irradiance": 522.5
+    },
+    {
+        "datetime": "2025-09-28T12:00",
+        "global_tilted_irradiance": 647.1
+    },
+    {
+        "datetime": "2025-09-28T13:00",
+        "global_tilted_irradiance": 679.9
+    },
+    {
+        "datetime": "2025-09-28T14:00",
+        "global_tilted_irradiance": 607.6
+    },
+    {
+        "datetime": "2025-09-28T15:00",
+        "global_tilted_irradiance": 456.8
+    },
+    {
+        "datetime": "2025-09-28T16:00",
+        "global_tilted_irradiance": 322.2
+    },
+    {
+        "datetime": "2025-09-28T17:00",
+        "global_tilted_irradiance": 223.4
+    },
+    {
+        "datetime": "2025-09-28T18:00",
+        "global_tilted_irradiance": 135.7
+    },
+    {
+        "datetime": "2025-09-28T19:00",
+        "global_tilted_irradiance": 53.6
+    },
+    {
+        "datetime": "2025-09-28T20:00",
+        "global_tilted_irradiance": 4.4
+    },
+    {
+        "datetime": "2025-09-28T21:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-28T22:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-28T23:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-29T00:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-29T01:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-29T02:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-29T03:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-29T04:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-29T05:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-29T06:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-29T07:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-29T08:00",
+        "global_tilted_irradiance": 6.6
+    },
+    {
+        "datetime": "2025-09-29T09:00",
+        "global_tilted_irradiance": 82.6
+    },
+    {
+        "datetime": "2025-09-29T10:00",
+        "global_tilted_irradiance": 255.4
+    },
+    {
+        "datetime": "2025-09-29T11:00",
+        "global_tilted_irradiance": 435.5
+    },
+    {
+        "datetime": "2025-09-29T12:00",
+        "global_tilted_irradiance": 575.6
+    },
+    {
+        "datetime": "2025-09-29T13:00",
+        "global_tilted_irradiance": 656.7
+    },
+    {
+        "datetime": "2025-09-29T14:00",
+        "global_tilted_irradiance": 672
+    },
+    {
+        "datetime": "2025-09-29T15:00",
+        "global_tilted_irradiance": 612
+    },
+    {
+        "datetime": "2025-09-29T16:00",
+        "global_tilted_irradiance": 485
+    },
+    {
+        "datetime": "2025-09-29T17:00",
+        "global_tilted_irradiance": 307.2
+    },
+    {
+        "datetime": "2025-09-29T18:00",
+        "global_tilted_irradiance": 144.1
+    },
+    {
+        "datetime": "2025-09-29T19:00",
+        "global_tilted_irradiance": 42.7
+    },
+    {
+        "datetime": "2025-09-29T20:00",
+        "global_tilted_irradiance": 2.1
+    },
+    {
+        "datetime": "2025-09-29T21:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-29T22:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-29T23:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-30T00:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-30T01:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-30T02:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-30T03:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-30T04:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-30T05:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-30T06:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-30T07:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-30T08:00",
+        "global_tilted_irradiance": 3.8
+    },
+    {
+        "datetime": "2025-09-30T09:00",
+        "global_tilted_irradiance": 33.1
+    },
+    {
+        "datetime": "2025-09-30T10:00",
+        "global_tilted_irradiance": 87.8
+    },
+    {
+        "datetime": "2025-09-30T11:00",
+        "global_tilted_irradiance": 113.4
+    },
+    {
+        "datetime": "2025-09-30T12:00",
+        "global_tilted_irradiance": 104.4
+    },
+    {
+        "datetime": "2025-09-30T13:00",
+        "global_tilted_irradiance": 105.4
+    },
+    {
+        "datetime": "2025-09-30T14:00",
+        "global_tilted_irradiance": 159.4
+    },
+    {
+        "datetime": "2025-09-30T15:00",
+        "global_tilted_irradiance": 239.5
+    },
+    {
+        "datetime": "2025-09-30T16:00",
+        "global_tilted_irradiance": 273.4
+    },
+    {
+        "datetime": "2025-09-30T17:00",
+        "global_tilted_irradiance": 225.4
+    },
+    {
+        "datetime": "2025-09-30T18:00",
+        "global_tilted_irradiance": 138.5
+    },
+    {
+        "datetime": "2025-09-30T19:00",
+        "global_tilted_irradiance": 51.6
+    },
+    {
+        "datetime": "2025-09-30T20:00",
+        "global_tilted_irradiance": 0.9
+    },
+    {
+        "datetime": "2025-09-30T21:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-30T22:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-09-30T23:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-01T00:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-01T01:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-01T02:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-01T03:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-01T04:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-01T05:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-01T06:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-01T07:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-01T08:00",
+        "global_tilted_irradiance": 4.7
+    },
+    {
+        "datetime": "2025-10-01T09:00",
+        "global_tilted_irradiance": 53.3
+    },
+    {
+        "datetime": "2025-10-01T10:00",
+        "global_tilted_irradiance": 174.3
+    },
+    {
+        "datetime": "2025-10-01T11:00",
+        "global_tilted_irradiance": 349.9
+    },
+    {
+        "datetime": "2025-10-01T12:00",
+        "global_tilted_irradiance": 558.3
+    },
+    {
+        "datetime": "2025-10-01T13:00",
+        "global_tilted_irradiance": 705.9
+    },
+    {
+        "datetime": "2025-10-01T14:00",
+        "global_tilted_irradiance": 712.7
+    },
+    {
+        "datetime": "2025-10-01T15:00",
+        "global_tilted_irradiance": 605.8
+    },
+    {
+        "datetime": "2025-10-01T16:00",
+        "global_tilted_irradiance": 460.6
+    },
+    {
+        "datetime": "2025-10-01T17:00",
+        "global_tilted_irradiance": 301.8
+    },
+    {
+        "datetime": "2025-10-01T18:00",
+        "global_tilted_irradiance": 154.8
+    },
+    {
+        "datetime": "2025-10-01T19:00",
+        "global_tilted_irradiance": 47.1
+    },
+    {
+        "datetime": "2025-10-01T20:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-01T21:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-01T22:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-01T23:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-02T00:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-02T01:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-02T02:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-02T03:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-02T04:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-02T05:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-02T06:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-02T07:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-02T08:00",
+        "global_tilted_irradiance": 3.8
+    },
+    {
+        "datetime": "2025-10-02T09:00",
+        "global_tilted_irradiance": 45
+    },
+    {
+        "datetime": "2025-10-02T10:00",
+        "global_tilted_irradiance": 145.4
+    },
+    {
+        "datetime": "2025-10-02T11:00",
+        "global_tilted_irradiance": 286.3
+    },
+    {
+        "datetime": "2025-10-02T12:00",
+        "global_tilted_irradiance": 456.1
+    },
+    {
+        "datetime": "2025-10-02T13:00",
+        "global_tilted_irradiance": 582.3
+    },
+    {
+        "datetime": "2025-10-02T14:00",
+        "global_tilted_irradiance": 605
+    },
+    {
+        "datetime": "2025-10-02T15:00",
+        "global_tilted_irradiance": 539.8
+    },
+    {
+        "datetime": "2025-10-02T16:00",
+        "global_tilted_irradiance": 433.7
+    },
+    {
+        "datetime": "2025-10-02T17:00",
+        "global_tilted_irradiance": 304.9
+    },
+    {
+        "datetime": "2025-10-02T18:00",
+        "global_tilted_irradiance": 169.3
+    },
+    {
+        "datetime": "2025-10-02T19:00",
+        "global_tilted_irradiance": 54.4
+    },
+    {
+        "datetime": "2025-10-02T20:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-02T21:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-02T22:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-02T23:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-03T00:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-03T01:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-03T02:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-03T03:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-03T04:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-03T05:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-03T06:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-03T07:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-03T08:00",
+        "global_tilted_irradiance": 3.8
+    },
+    {
+        "datetime": "2025-10-03T09:00",
+        "global_tilted_irradiance": 51.8
+    },
+    {
+        "datetime": "2025-10-03T10:00",
+        "global_tilted_irradiance": 173.1
+    },
+    {
+        "datetime": "2025-10-03T11:00",
+        "global_tilted_irradiance": 351
+    },
+    {
+        "datetime": "2025-10-03T12:00",
+        "global_tilted_irradiance": 563.8
+    },
+    {
+        "datetime": "2025-10-03T13:00",
+        "global_tilted_irradiance": 732.7
+    },
+    {
+        "datetime": "2025-10-03T14:00",
+        "global_tilted_irradiance": 789.7
+    },
+    {
+        "datetime": "2025-10-03T15:00",
+        "global_tilted_irradiance": 741.1
+    },
+    {
+        "datetime": "2025-10-03T16:00",
+        "global_tilted_irradiance": 629.7
+    },
+    {
+        "datetime": "2025-10-03T17:00",
+        "global_tilted_irradiance": 468.1
+    },
+    {
+        "datetime": "2025-10-03T18:00",
+        "global_tilted_irradiance": 279.3
+    },
+    {
+        "datetime": "2025-10-03T19:00",
+        "global_tilted_irradiance": 91.4
+    },
+    {
+        "datetime": "2025-10-03T20:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-03T21:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-03T22:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-03T23:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-04T00:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-04T01:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-04T02:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-04T03:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-04T04:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-04T05:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-04T06:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-04T07:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-04T08:00",
+        "global_tilted_irradiance": 1.9
+    },
+    {
+        "datetime": "2025-10-04T09:00",
+        "global_tilted_irradiance": 39.6
+    },
+    {
+        "datetime": "2025-10-04T10:00",
+        "global_tilted_irradiance": 153.7
+    },
+    {
+        "datetime": "2025-10-04T11:00",
+        "global_tilted_irradiance": 333.9
+    },
+    {
+        "datetime": "2025-10-04T12:00",
+        "global_tilted_irradiance": 561.3
+    },
+    {
+        "datetime": "2025-10-04T13:00",
+        "global_tilted_irradiance": 747
+    },
+    {
+        "datetime": "2025-10-04T14:00",
+        "global_tilted_irradiance": 807.7
+    },
+    {
+        "datetime": "2025-10-04T15:00",
+        "global_tilted_irradiance": 758.9
+    },
+    {
+        "datetime": "2025-10-04T16:00",
+        "global_tilted_irradiance": 641.8
+    },
+    {
+        "datetime": "2025-10-04T17:00",
+        "global_tilted_irradiance": 474.4
+    },
+    {
+        "datetime": "2025-10-04T18:00",
+        "global_tilted_irradiance": 280
+    },
+    {
+        "datetime": "2025-10-04T19:00",
+        "global_tilted_irradiance": 87.4
+    },
+    {
+        "datetime": "2025-10-04T20:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-04T21:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-04T22:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-04T23:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-05T00:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-05T01:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-05T02:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-05T03:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-05T04:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-05T05:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-05T06:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-05T07:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-05T08:00",
+        "global_tilted_irradiance": 1.9
+    },
+    {
+        "datetime": "2025-10-05T09:00",
+        "global_tilted_irradiance": 37.5
+    },
+    {
+        "datetime": "2025-10-05T10:00",
+        "global_tilted_irradiance": 149.2
+    },
+    {
+        "datetime": "2025-10-05T11:00",
+        "global_tilted_irradiance": 325
+    },
+    {
+        "datetime": "2025-10-05T12:00",
+        "global_tilted_irradiance": 549.8
+    },
+    {
+        "datetime": "2025-10-05T13:00",
+        "global_tilted_irradiance": 729.3
+    },
+    {
+        "datetime": "2025-10-05T14:00",
+        "global_tilted_irradiance": 790.5
+    },
+    {
+        "datetime": "2025-10-05T15:00",
+        "global_tilted_irradiance": 739.9
+    },
+    {
+        "datetime": "2025-10-05T16:00",
+        "global_tilted_irradiance": 624.5
+    },
+    {
+        "datetime": "2025-10-05T17:00",
+        "global_tilted_irradiance": 460.4
+    },
+    {
+        "datetime": "2025-10-05T18:00",
+        "global_tilted_irradiance": 269
+    },
+    {
+        "datetime": "2025-10-05T19:00",
+        "global_tilted_irradiance": 80
+    },
+    {
+        "datetime": "2025-10-05T20:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-05T21:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-05T22:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-05T23:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-06T00:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-06T01:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-06T02:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-06T03:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-06T04:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-06T05:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-06T06:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-06T07:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-06T08:00",
+        "global_tilted_irradiance": 1.9
+    },
+    {
+        "datetime": "2025-10-06T09:00",
+        "global_tilted_irradiance": 36.6
+    },
+    {
+        "datetime": "2025-10-06T10:00",
+        "global_tilted_irradiance": 149.1
+    },
+    {
+        "datetime": "2025-10-06T11:00",
+        "global_tilted_irradiance": 328
+    },
+    {
+        "datetime": "2025-10-06T12:00",
+        "global_tilted_irradiance": 554.4
+    },
+    {
+        "datetime": "2025-10-06T13:00",
+        "global_tilted_irradiance": 734.8
+    },
+    {
+        "datetime": "2025-10-06T14:00",
+        "global_tilted_irradiance": 792.6
+    },
+    {
+        "datetime": "2025-10-06T15:00",
+        "global_tilted_irradiance": 738.4
+    },
+    {
+        "datetime": "2025-10-06T16:00",
+        "global_tilted_irradiance": 619.2
+    },
+    {
+        "datetime": "2025-10-06T17:00",
+        "global_tilted_irradiance": 453
+    },
+    {
+        "datetime": "2025-10-06T18:00",
+        "global_tilted_irradiance": 261.2
+    },
+    {
+        "datetime": "2025-10-06T19:00",
+        "global_tilted_irradiance": 73.6
+    },
+    {
+        "datetime": "2025-10-06T20:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-06T21:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-06T22:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-06T23:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-07T00:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-07T01:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-07T02:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-07T03:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-07T04:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-07T05:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-07T06:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-07T07:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-07T08:00",
+        "global_tilted_irradiance": 0.9
+    },
+    {
+        "datetime": "2025-10-07T09:00",
+        "global_tilted_irradiance": 27.4
+    },
+    {
+        "datetime": "2025-10-07T10:00",
+        "global_tilted_irradiance": 111.7
+    },
+    {
+        "datetime": "2025-10-07T11:00",
+        "global_tilted_irradiance": 245.1
+    },
+    {
+        "datetime": "2025-10-07T12:00",
+        "global_tilted_irradiance": 413.3
+    },
+    {
+        "datetime": "2025-10-07T13:00",
+        "global_tilted_irradiance": 558.4
+    },
+    {
+        "datetime": "2025-10-07T14:00",
+        "global_tilted_irradiance": 615
+    },
+    {
+        "datetime": "2025-10-07T15:00",
+        "global_tilted_irradiance": 587
+    },
+    {
+        "datetime": "2025-10-07T16:00",
+        "global_tilted_irradiance": 505.2
+    },
+    {
+        "datetime": "2025-10-07T17:00",
+        "global_tilted_irradiance": 379.5
+    },
+    {
+        "datetime": "2025-10-07T18:00",
+        "global_tilted_irradiance": 224.8
+    },
+    {
+        "datetime": "2025-10-07T19:00",
+        "global_tilted_irradiance": 64.9
+    },
+    {
+        "datetime": "2025-10-07T20:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-07T21:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-07T22:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-07T23:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-08T00:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-08T01:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-08T02:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-08T03:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-08T04:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-08T05:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-08T06:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-08T07:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-08T08:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-08T09:00",
+        "global_tilted_irradiance": 14.2
+    },
+    {
+        "datetime": "2025-10-08T10:00",
+        "global_tilted_irradiance": 56.9
+    },
+    {
+        "datetime": "2025-10-08T11:00",
+        "global_tilted_irradiance": 122.3
+    },
+    {
+        "datetime": "2025-10-08T12:00",
+        "global_tilted_irradiance": 202.7
+    },
+    {
+        "datetime": "2025-10-08T13:00",
+        "global_tilted_irradiance": 276.8
+    },
+    {
+        "datetime": "2025-10-08T14:00",
+        "global_tilted_irradiance": 315.4
+    },
+    {
+        "datetime": "2025-10-08T15:00",
+        "global_tilted_irradiance": 318.9
+    },
+    {
+        "datetime": "2025-10-08T16:00",
+        "global_tilted_irradiance": 291.4
+    },
+    {
+        "datetime": "2025-10-08T17:00",
+        "global_tilted_irradiance": 231.5
+    },
+    {
+        "datetime": "2025-10-08T18:00",
+        "global_tilted_irradiance": 145.1
+    },
+    {
+        "datetime": "2025-10-08T19:00",
+        "global_tilted_irradiance": 42.7
+    },
+    {
+        "datetime": "2025-10-08T20:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-08T21:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-08T22:00",
+        "global_tilted_irradiance": 0
+    },
+    {
+        "datetime": "2025-10-08T23:00",
+        "global_tilted_irradiance": 0
+    }
+]
