@@ -1,5 +1,5 @@
 {
-  "pv_leistung_w": 4200,
+  "pv_leistung_kw": 4.2,
   "batterie_stand": { "kwh": 31.0, "percent": 62, "capacity_kwh": 49.9 },
   "netz_leistung_w": -350,
   "haus_last_w": 2200,

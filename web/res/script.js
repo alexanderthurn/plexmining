@@ -30,7 +30,8 @@ function populateMinerTable(miners) {
         
         // For row > 1 (index > 0), show cumulative values in gray and + prefix
         let hashrateHtml = formatMaybeNumberDE(miner.hashrate, 0);
-        let powerHtml = formatMaybeNumberDE(miner.power, 0);
+        let powerKw = typeof miner.power_kw === 'number' ? miner.power_kw : (typeof miner.power === 'number' ? miner.power / 1000 : 0);
+        let powerHtml = formatMaybeNumberDE(powerKw, 1);
         
         if (index > 0) {
             // Add + prefix from second row onwards
@@ -38,16 +39,19 @@ function populateMinerTable(miners) {
             powerHtml = '+' + powerHtml;
             
             // Add cumulative values if available
-            if (miner.cumulative_hashrate || miner.cumulative_power) {
+            if (miner.cumulative_hashrate || miner.cumulative_power_kw) {
                 hashrateHtml += (miner.cumulative_hashrate ? 
                     ` <small class="text-muted" style="color:gray;">(${formatMaybeNumberDE(miner.cumulative_hashrate, 0)})</small>` : '');
-                powerHtml += (miner.cumulative_power ? 
-                    ` <small class="text-muted" style="color:gray;">(${formatMaybeNumberDE(miner.cumulative_power, 0)})</small>` : '');
+                powerHtml += (miner.cumulative_power_kw ? 
+                    ` <small class="text-muted" style="color:gray;">(${formatMaybeNumberDE(miner.cumulative_power_kw, 1)})</small>` : '');
             }
         }
         
         // Format TH/kWh display
         const thPerKwhDisplay = miner.th_per_kwh ? miner.th_per_kwh.toFixed(2) : '0.00';
+        
+        // Format Min. Batterie display
+        const minBatteryDisplay = miner.minBatteryKwh ? miner.minBatteryKwh.toFixed(1) : '15.0';
         
         row.innerHTML = `
             <td>${miner.id}</td>
@@ -55,6 +59,7 @@ function populateMinerTable(miners) {
             <td>${hashrateHtml}</td>
             <td>${powerHtml}</td>
             <td>${thPerKwhDisplay}</td>
+            <td>${minBatteryDisplay}</td>
             <td>${miner.ip || '-'}</td>
         `;
         tbody.appendChild(row);
@@ -73,8 +78,6 @@ function fetchAndRenderMiners() {
                 loadAndApplyAutoMode();
                 // Load system-scale from settings
                 loadAndApplySystemScale();
-                // Load mining-min-battery from settings
-                loadAndApplyMiningMinBattery();
             }
 
             if (data && Array.isArray(data.miners)) {
@@ -126,23 +129,18 @@ function renderPV(pv) {
     // Check if we have server-calculated values
     if (pv.calculated) {
         // Use pre-calculated server-side values (already formatted in German locale)
-        var pvPower = typeof pv.pv_leistung_w !== 'undefined' ? pv.pv_leistung_w : 0;
+        var pvPowerKw = typeof pv.pv_leistung_kw !== 'undefined' ? pv.pv_leistung_kw : (typeof pv.pv_leistung_w !== 'undefined' ? pv.pv_leistung_w / 1000 : 0);
         var pvKwp = window.__plexSettings && window.__plexSettings.pv_kwp !== 'undefined' ? window.__plexSettings.pv_kwp : 120;
-        var pvMaxPowerW = pvKwp * 1000; // Convert kWp to watts  
-        var pvPowerPercent = pvMaxPowerW > 0 ? (pvPower / pvMaxPowerW * 100) : 0;
+        var pvMaxPowerKw = pvKwp; // in kW
+        var pvMaxPowerW = pvMaxPowerKw * 1000; // Convert to watts
+        var pvPowerPercent = pvMaxPowerKw > 0 ? (pvPowerKw / pvMaxPowerKw * 100) : 0;
         
-        setText('pv-leistung', pv.calculated.formatted_pv_power + ' W (' + Math.round(pvPowerPercent * 10) / 10 + '%)');
+        var pvPowerKwDisplay = (typeof pvPowerKw === 'number' && isFinite(pvPowerKw)) ? (Math.round(pvPowerKw * 10) / 10).toString().replace('.', ',') : '0';
+        setText('pv-leistung', pvPowerKwDisplay + ' kW (' + Math.round(pvPowerPercent * 10) / 10 + '%)');
         setText('pv-kwp', pvKwp);
-        setText('batterie-kwh', pv.calculated.formatted_battery_capacity);
+        setText('batterie-kapazitaet', pv.calculated.formatted_battery_capacity);
         setText('batterie-current', pv.calculated.formatted_battery_kwh);
-        setText('mining-min-battery', pv.calculated.formatted_mining_min_battery);
-        
-        // Mining status
-        var miningStatusEl = document.getElementById('mining-status');
-        if (miningStatusEl) {
-            miningStatusEl.textContent = pv.calculated.miningStatusText;
-            miningStatusEl.className = 'fw-bold ' + pv.calculated.miningStatusClass;
-        }
+        setText('batterie-percent', typeof pv.batterie_stand?.percent === 'number' ? pv.batterie_stand.percent : '0');
         
         // Power values
         setText('haus-last', pv.calculated.formatted_haus_last);
@@ -151,7 +149,6 @@ function renderPV(pv) {
         // Draw charts using original values (not formatted)
         var batteryKwh = pv.batterie_stand && typeof pv.batterie_stand.kwh !== 'undefined' ? pv.batterie_stand.kwh : 0;
         var batteryPercent = pv.batterie_stand && typeof pv.batterie_stand.percent !== 'undefined' ? pv.batterie_stand.percent : 0;
-        var pvPower = typeof pv.pv_leistung_w !== 'undefined' ? pv.pv_leistung_w : 0;
         
         try {
             if (typeof d3 !== 'undefined') {
@@ -159,7 +156,7 @@ function renderPV(pv) {
                     drawBatteryDonut(batteryPercent, batteryKwh);
                 }
                 if (typeof drawSolarPanel === 'function') {
-                    drawSolarPanel(pvPower);
+                    drawSolarPanel(pvPowerPercent);
                 }
             }
         } catch (e) { /* no-op */ }
@@ -169,37 +166,21 @@ function renderPV(pv) {
             return typeof value === 'number' ? value.toFixed(decimals).replace('.', ',') : value;
         }
         
-        var pvPower = typeof pv.pv_leistung_w !== 'undefined' ? pv.pv_leistung_w : 0;
+        var pvPowerKw = typeof pv.pv_leistung_kw !== 'undefined' ? pv.pv_leistung_kw : (typeof pv.pv_leistung_w !== 'undefined' ? pv.pv_leistung_w / 1000 : 0);
+        var pvPowerW = pvPowerKw * 1000;
         var pvKwp = window.__plexSettings && window.__plexSettings.pv_kwp !== 'undefined' ? window.__plexSettings.pv_kwp : 120;
         var pvMaxPowerW = pvKwp * 1000; // Convert kWp to watts  
-        var pvPowerPercent = pvMaxPowerW > 0 ? (pvPower / pvMaxPowerW * 100) : 0;
+        var pvPowerPercent = pvMaxPowerW > 0 ? (pvPowerW / pvMaxPowerW * 100) : 0;
         
-        setText('pv-leistung', formatNumberDE(pvPower, 0) + ' W (' + Math.round(pvPowerPercent * 10) / 10 + '%)');
+        setText('pv-leistung', formatNumberDE(pvPowerKw, 1) + ' kW (' + Math.round(pvPowerPercent * 10) / 10 + '%)');
         setText('pv-kwp', pvKwp);
         
         var batteryKwh = pv.batterie_stand && typeof pv.batterie_stand.kwh !== 'undefined' ? pv.batterie_stand.kwh : 0;
         var batteryPercent = pv.batterie_stand && typeof pv.batterie_stand.percent !== 'undefined' ? pv.batterie_stand.percent : 0;
         var batteryCapacity = pv.batterie_stand && typeof pv.batterie_stand.capacity_kwh !== 'undefined' ? pv.batterie_stand.capacity_kwh : 49.9;
-        setText('batterie-kwh', formatNumberDE(batteryCapacity, 1));
+        setText('batterie-kapazitaet', formatNumberDE(batteryCapacity, 1));
         setText('batterie-current', formatNumberDE(batteryKwh, 1));
-        
-        var miningMinBattery = (window.__plexSettings && typeof window.__plexSettings.miningMinBatteryKwh !== 'undefined') ? window.__plexSettings.miningMinBatteryKwh : 15.0;
-        setText('mining-min-battery', formatNumberDE(miningMinBattery, 1));
-        
-        var miningPossible = batteryKwh >= miningMinBattery;
-        var hausLast = typeof pv.haus_last_w !== 'undefined' ? pv.haus_last_w : 0;
-        var availablePower = pvPower - hausLast;
-        
-        var miningStatusText = miningPossible ? formatNumberDE(batteryKwh - miningMinBattery, 1) + ' kWh' : 'nix';
-        var miningStatusClass = miningPossible ? 'text-success' : 'text-danger';
-        var miningStatusEl = document.getElementById('mining-status');
-        if (miningStatusEl) {
-            miningStatusEl.textContent = miningStatusText;
-            miningStatusEl.className = 'fw-bold ' + miningStatusClass;
-        }
-        
-        setText('haus-last', formatNumberDE(hausLast, 0));
-        setText('available-power', formatNumberDE(availablePower, 0));
+        setText('batterie-percent', formatNumberDE(batteryPercent, 0));
         
         try {
             if (typeof d3 !== 'undefined') {
@@ -207,7 +188,7 @@ function renderPV(pv) {
                     drawBatteryDonut(batteryPercent, batteryKwh);
                 }
                 if (typeof drawSolarPanel === 'function') {
-                    drawSolarPanel(pvPower);
+                    drawSolarPanel(pvPowerPercent);
                 }
             }
         } catch (e) { /* no-op */ }
@@ -442,16 +423,6 @@ function loadAndApplySystemScale() {
     }
 }
 
-function loadAndApplyMiningMinBattery() {
-    const miningMinBatteryInput = document.getElementById('mining-min-battery-input');
-    
-    if (!miningMinBatteryInput) return;
-    
-    if (window.__plexSettings && typeof window.__plexSettings.miningMinBatteryKwh === 'number') {
-        const batteryValue = Math.max(0, Math.min(50, window.__plexSettings.miningMinBatteryKwh));
-        miningMinBatteryInput.value = batteryValue;
-    }
-}
 
 function setupAutoModeToggle() {
     const autoModeToggle = document.getElementById('auto-mode-toggle');
@@ -515,44 +486,6 @@ function setupSystemScaleHandlers() {
     }
 }
 
-function saveMiningMinBatterySettings(miningMinBattery) {
-    // Get current settings
-    const currentSettings = window.__plexSettings || {};
-    
-    // Merge with new miningMinBatteryKwh
-    const updatedSettings = Object.assign({}, currentSettings, { miningMinBatteryKwh: miningMinBattery });
-    
-    fetch('../api/settings.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedSettings)
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Mining min battery setting saved:', data);
-        // Update local store
-        window.__plexSettings.miningMinBatteryKwh = miningMinBattery;
-        
-        // Reload data to refresh PV calculations that depend on min battery
-        fetchAndRenderMiners();
-    })
-    .catch(error => {
-        console.error('Error saving mining min battery settings:', error);
-    });
-}
-
-function setupMiningMinBatteryHandlers() {
-    const miningMinBatteryInput = document.getElementById('mining-min-battery-input');
-    
-    if (miningMinBatteryInput) {
-        miningMinBatteryInput.addEventListener('input', function() {
-            // Persist to backend
-            saveMiningMinBatterySettings(parseFloat(this.value));
-        });
-    }
-}
 
 // Miner Edit Mode Functions
 function setupMinerEditMode() {
@@ -675,10 +608,11 @@ function setupMinerEditMode() {
             const miners = [];
             Array.from(tbody.children).forEach((row, index) => {
                 const cells = row.children;
-                if (cells.length >= 5) {
+                if (cells.length >= 7) { // Now we have 7 columns
                     const idText = cells[0].textContent.trim();
                     const hashrateText = cells[2].textContent.trim();
                     const powerText = cells[3].textContent.trim();
+                    const minBatteryText = cells[5].textContent.trim();
                     
                     // Extract clean numbers for parsing (remove cumulative display info)
                     const cleanHashrate = hashrateText.includes('(') ? hashrateText.substring(0, hashrateText.indexOf('(')).trim() : hashrateText;
@@ -689,7 +623,8 @@ function setupMinerEditMode() {
                         model: cells[1].textContent.trim(),
                         hashrate: parseFloat(cleanHashrate) || 0,
                         power: parseFloat(cleanPower) || 0,
-                        ip: cells[4].textContent.trim() === '-' ? '' : cells[4].textContent.trim()
+                        minBatteryKwh: parseFloat(minBatteryText) || 15.0,
+                        ip: cells[6].textContent.trim() === '-' ? '' : cells[6].textContent.trim()
                     };
                     miners.push(miner);
                     console.log('Parsed miner:', miner);
@@ -732,11 +667,17 @@ function setupMinerEditMode() {
                         <input type="number" class="form-control form-control-sm" data-field="power" value="${miner?.power || ''}" step="0.1" placeholder="3500">
                     </div>
                     <div class="col-md-2">
+                        <label class="form-label small">Min. Batterie (kWh)</label>
+                        <input type="number" class="form-control form-control-sm" data-field="minBatteryKwh" value="${miner?.minBatteryKwh || 15.0}" step="0.1" placeholder="15.0" min="0" max="50">
+                    </div>
+                    <div class="col-md-2">
                         <label class="form-label small">IP-Adresse</label>
                         <input type="text" class="form-control form-control-sm" data-field="ip" value="${miner?.ip || ''}" placeholder="192.168.1.101">
                     </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button type="button" class="btn btn-danger btn-sm w-100" data-remove="true">
+                </div>
+                <div class="row g-3 mt-2">
+                    <div class="col-md-12 d-flex justify-content-end">
+                        <button type="button" class="btn btn-danger btn-sm" data-remove="true">
                             X
                         </button>
                     </div>
@@ -756,7 +697,7 @@ function setupMinerEditMode() {
     }
     
     function addNewMinerRow() {
-        const newMiner = { id: '', model: '', hashrate: '', power: '', ip: '' };
+        const newMiner = { id: '', model: '', hashrate: '', power: '', minBatteryKwh: 15.0, ip: '' };
         addEditRow(newMiner);
     }
     
@@ -783,8 +724,8 @@ function setupMinerEditMode() {
                 
                 console.log(`${field}: "${value}"`);
                 
-                if (field === 'hashrate' || field === 'power') {
-                    miner[field] = value && !isNaN(value) ? parseFloat(value) : 0;
+                if (field === 'hashrate' || field === 'power' || field === 'minBatteryKwh') {
+                    miner[field] = value && !isNaN(value) ? parseFloat(value) : (field === 'minBatteryKwh' ? 15.0 : 0);
                 } else if (field === 'id') {
                     // ID is now text field, just store as string
                     miner[field] = value || `miner-${index + 1}`;
@@ -835,6 +776,7 @@ function setupMinerEditMode() {
                     model: miner.model || '',
                     hashrate: typeof miner.hashrate === 'number' ? miner.hashrate : 0,
                     power: typeof miner.power === 'number' ? miner.power : 0,
+                    minBatteryKwh: typeof miner.minBatteryKwh === 'number' ? miner.minBatteryKwh : 15.0,
                     ip: miner.ip || ''
                 };
                 
@@ -920,7 +862,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Setup control elements
     setupAutoModeToggle();
     setupSystemScaleHandlers();
-    setupMiningMinBatteryHandlers();
     setupEmergencyStop();
     setupMinerEditMode();
     

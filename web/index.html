@@ -33,12 +33,6 @@
                                 <input type="number" class="form-control" id="system-scale-input" min="0" max="100" value="100">
                                 <span class="input-group-text">%</span>
                             </div>
-                            <hr class="my-3">
-                            <label for="mining-min-battery" class="form-label">Min. Batterie (kWh):</label>
-                            <div class="input-group">
-                                <input type="number" class="form-control" id="mining-min-battery-input" min="0" max="50" step="0.1" value="15.0">
-                                <span class="input-group-text">kWh</span>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -49,10 +43,10 @@
                         <h5 class="card-title">Batteriestand <small class="text-muted float-end" id="ts-pv"></small></h5>
                         <div class="text-center mb-3">
                             <div id="battery-donut" style="width: 150px; height: 150px; margin: 0 auto;"></div>
-                            <div class="mt-2">
-                                <small class="text-muted"><span id="batterie-current"></span> kWh</small><br>
-                                <small class="text-muted">> <span id="mining-min-battery"></span> kWh</small><br>
-                                <small class="text-muted">Für Mining verfügbar: <span id="mining-status"></span></small>
+                            <div class="mt-2 text-muted small">
+                                <div>Kapazität: <span id="batterie-kapazitaet"></span> kWh</div>
+                                <div>Aktuell: <span id="batterie-current"></span> kWh</div>
+                                <div>Füllstand: <span id="batterie-percent"></span> %</div>
                             </div>
                         </div>
                     </div>
@@ -80,7 +74,7 @@
             <div class="col-md-6">
                 <div class="card same-height">
                     <div class="card-body">
-                        <h5 class="card-title">14 Tage Wetter & Prognose <small class="text-muted float-end" id="ts-weather"></small></h5>
+                        <h5 class="card-title">14 Tage Wetterprognose <small class="text-muted float-end" id="ts-weather"></small></h5>
                         <div class="d-flex">
                             <div class="flex-grow-1">
                                 <div class="table-responsive">
@@ -154,7 +148,7 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">Stündliche Wetter & Prognose <small class="text-muted float-end" id="ts-weather-hourly"></small></h5>
+                        <h5 class="card-title">Stündliche Wetterprognose <small class="text-muted float-end" id="ts-weather-hourly"></small></h5>
                         <div class="row">
                             <div class="col-12">
                                 <div id="weather-hourly-chart" style="width: 100%; height: 300px;"></div>
@@ -221,8 +215,9 @@
                                         <th scope="col">Miner ID</th>
                                         <th scope="col">Modell</th>
                                         <th scope="col">Max. Hashrate (TH/s)</th>
-                                        <th scope="col">Max. Stromaufnahme (W)</th>
+                                        <th scope="col">Max. Stromaufnahme (kW)</th>
                                         <th scope="col">TH/s /kWh</th>
+                                        <th scope="col">Min. Batterie (kWh)</th>
                                         <th scope="col">IP-Adresse</th>
                                     </tr>
                                 </thead>

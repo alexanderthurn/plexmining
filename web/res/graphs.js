@@ -394,21 +394,14 @@ function drawBatteryDonut(percent, kwh) {
     // Add percentage text in center
     g.append('text')
         .attr('text-anchor', 'middle')
-        .attr('dy', '-0.3em')
+        .attr('dy', '0.35em')
         .style('font-size', '24px')
         .style('font-weight', 'bold')
         .style('fill', '#28a745')
         .text(percent + '%');
-
-    g.append('text')
-        .attr('text-anchor', 'middle')
-        .attr('dy', '1em')
-        .style('font-size', '12px')
-        .style('fill', '#6c757d')
-        .text(formatNumberDE(kwh, 1) + ' kWh');
 }
 
-function drawSolarPanel(power) {
+function drawSolarPanel(powerPercent) {
     var container = document.getElementById('solar-panel');
     if (!container) return;
     container.innerHTML = '';
@@ -423,67 +416,45 @@ function drawSolarPanel(power) {
     var g = svg.append('g')
         .attr('transform', 'translate(' + width/2 + ',' + height/2 + ')');
 
-    // Solar panel frame
-    var panelColor = power > 0 ? '#f39c12' : '#6c757d';
+    // Minimalist panel background
+    var panelWidth = 120;
+    var panelHeight = 70;
+    var cellsX = 6;
+    var cellsY = 4;
+    var totalCells = cellsX * cellsY;
+    var activeCells = Math.max(0, Math.min(totalCells, Math.round(totalCells * (powerPercent / 100))));
     
     g.append('rect')
-        .attr('x', -60)
-        .attr('y', -35)
-        .attr('width', 120)
-        .attr('height', 70)
-        .attr('rx', 6)
-        .attr('fill', '#2c3e50')
-        .attr('stroke', '#34495e')
-        .attr('stroke-width', 2);
+        .attr('x', -panelWidth/2)
+        .attr('y', -panelHeight/2)
+        .attr('width', panelWidth)
+        .attr('height', panelHeight)
+        .attr('rx', 8)
+        .attr('fill', '#1f2a37');
 
-    // Solar cells grid - simple and clean
-    for (var i = 0; i < 6; i++) {
-        for (var j = 0; j < 4; j++) {
-            var x = -50 + i * 20;
-            var y = -25 + j * 16;
-            
+    var cellWidth = 18;
+    var cellHeight = 14;
+    var gapX = (panelWidth - cellsX * cellWidth) / (cellsX + 1);
+    var gapY = (panelHeight - cellsY * cellHeight) / (cellsY + 1);
+    
+    var activeColor = '#4ade80';
+    var inactiveColor = '#1f2933';
+
+    var cellIndex = 0;
+    for (var j = 0; j < cellsY; j++) {
+        for (var i = 0; i < cellsX; i++) {
+            var x = -panelWidth/2 + gapX + i * (cellWidth + gapX);
+            var y = -panelHeight/2 + gapY + j * (cellHeight + gapY);
+
             g.append('rect')
                 .attr('x', x)
                 .attr('y', y)
-                .attr('width', 18)
-                .attr('height', 14)
-                .attr('rx', 2)
-                .attr('fill', power > 0 ? '#ffc107' : '#95a5a6')
-                .attr('stroke', '#2c3e50')
-                .attr('stroke-width', 1);
+                .attr('width', cellWidth)
+                .attr('height', cellHeight)
+                .attr('rx', 3)
+                .attr('fill', cellIndex < activeCells ? activeColor : inactiveColor);
+
+            cellIndex++;
         }
     }
-
-    // Sun rays (if power > 0)
-    if (power > 0) {
-        for (var i = 0; i < 8; i++) {
-            var angle = (i * 45) * Math.PI / 180;
-            var x1 = 65 + Math.cos(angle) * 20;
-            var y1 = Math.sin(angle) * 20;
-            var x2 = 65 + Math.cos(angle) * 30;
-            var y2 = Math.sin(angle) * 30;
-            
-            g.append('line')
-                .attr('x1', x1)
-                .attr('y1', y1)
-                .attr('x2', x2)
-                .attr('y2', y2)
-                .attr('stroke', '#ffc107')
-                .attr('stroke-width', 2);
-        }
-        
-        // Sun circle
-        g.append('circle')
-            .attr('cx', 65)
-            .attr('cy', 0)
-            .attr('r', 10)
-            .attr('fill', '#ffc107');
-    }
-
-    // Power LED indicator
-    g.append('circle')
-        .attr('cx', -50)
-        .attr('cy', 25)
-        .attr('r', 3)
-        .attr('fill', power > 0 ? '#27ae60' : '#e74c3c');
 }

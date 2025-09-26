@@ -2,7 +2,6 @@
     "c": "e",
     "pv_kwp": 120,
     "pvSystemFactor": 0.8,
-    "miningMinBatteryKwh": 12,
     "autoMode": true,
     "systemScale": 30,
     "miners": [
@@ -10,56 +9,64 @@
             "id": "1",
             "model": "S23",
             "hashrate": 300,
-            "power": 3500,
+            "power_kw": 3.5,
+            "minBatteryKwh": 10,
             "ip": "192.168.1.101"
         },
         {
             "id": "2",
             "model": "S21",
             "hashrate": 200,
-            "power": 3500,
+            "power_kw": 3.5,
+            "minBatteryKwh": 20,
             "ip": "192.168.1.102"
         },
         {
             "id": "3",
             "model": "S19 K PRO",
             "hashrate": 150,
-            "power": 3000,
+            "power_kw": 3.0,
+            "minBatteryKwh": 40,
             "ip": "192.168.0.1"
         },
         {
             "id": "4",
             "model": "S 19J PRO",
             "hashrate": 110,
-            "power": 3500,
+            "power_kw": 3.5,
+            "minBatteryKwh": 40,
             "ip": "192.168.1.107"
         },
         {
             "id": "5",
             "model": "S 19J PRO",
             "hashrate": 100,
-            "power": 3500,
+            "power_kw": 3.5,
+            "minBatteryKwh": 40,
             "ip": "192.168.1.103"
         },
         {
             "id": "6",
             "model": "S 19J PRO",
             "hashrate": 100,
-            "power": 3500,
+            "power_kw": 3.5,
+            "minBatteryKwh": 50,
             "ip": "192.168.1.104"
         },
         {
             "id": "7",
             "model": "S 19J PRO",
             "hashrate": 100,
-            "power": 3500,
+            "power_kw": 3.5,
+            "minBatteryKwh": 50,
             "ip": "192.168.1.105"
         },
         {
             "id": "8",
             "model": "S 19J PRO",
             "hashrate": 100,
-            "power": 3500,
+            "power_kw": 3.5,
+            "minBatteryKwh": 50,
             "ip": "192.168.1.106"
         }
     ]

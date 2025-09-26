@@ -30,25 +30,29 @@ $pv = json_read_assoc($pvFile, []);
 // Add cumulative (accumulated) values and TH/kWh calculation for miners
 if (is_array($miners)) {
     $cumulativeHashrate = 0;
-    $cumulativePower = 0;
+    $cumulativePowerKw = 0;
     
     foreach ($miners as $index => &$miner) {
-        isset($miner['hashrate']) && is_numeric($miner['hashrate']) && ($cumulativeHashrate += floatval($miner['hashrate']));
-        isset($miner['power']) && is_numeric($miner['power']) && ($cumulativePower += floatval($miner['power']));
+        $hashrate = isset($miner['hashrate']) && is_numeric($miner['hashrate']) ? floatval($miner['hashrate']) : 0;
+        $powerKw = 0;
+        if (isset($miner['power_kw']) && is_numeric($miner['power_kw'])) {
+            $powerKw = floatval($miner['power_kw']);
+        } elseif (isset($miner['power']) && is_numeric($miner['power'])) {
+            $powerKw = floatval($miner['power']) / 1000;
+            $miner['power_kw'] = $powerKw;
+        }
+        
+        $cumulativeHashrate += $hashrate;
+        $cumulativePowerKw += $powerKw;
         
         // Add cumulative values from index 1 (second miner) onwards
         if ($index > 0) {
             $miner['cumulative_hashrate'] = floatval($cumulativeHashrate);
-            $miner['cumulative_power'] = floatval($cumulativePower);
+            $miner['cumulative_power_kw'] = round($cumulativePowerKw, 3);
         }
         
         // Calculate TH/kWh efficiency for each miner
-        $hashrate = isset($miner['hashrate']) && is_numeric($miner['hashrate']) ? floatval($miner['hashrate']) : 0;
-        $power = isset($miner['power']) && is_numeric($miner['power']) ? floatval($miner['power']) : 0;
-        
-        // TH/kWh = (hashrate TH/s) / (power in kW)
-        // Convert power from W to kW
-        $powerInKW = $power / 1000;
+        $powerInKW = $powerKw;
         $thPerKWh = ($powerInKW > 0) ? round($hashrate / $powerInKW, 3) : 0;
         
         $miner['th_per_kwh'] = $thPerKWh;
@@ -105,25 +109,20 @@ if (is_array($weatherHourly) && isset($settings['pv_kwp']) && isset($settings['p
 }
 
 // Add calculated values to PV data (instead of calculating in JavaScript)
-if (is_array($pv) && isset($settings['miningMinBatteryKwh'])) {
+if (is_array($pv)) {
     $pvKwh = floatval($pv['batterie_stand']['kwh'] ?? 0);
     $houseLoad = floatval($pv['haus_last_w'] ?? 0);
-    $pvPower = floatval($pv['pv_leistung_w'] ?? 0);
-    $miningMinBattery = floatval($settings['miningMinBatteryKwh'] ?? 15.0);
+    $pvPowerKw = floatval($pv['pv_leistung_kw'] ?? 0);
+    $pvPowerW = $pvPowerKw * 1000;
     
     // Calculate values that were previously done in JavaScript
     $pv['calculated'] = [
-        'batteryDifference' => $pvKwh - $miningMinBattery,
-        'availablePower' => $pvPower - $houseLoad,
-        'miningPossible' => $pvKwh >= $miningMinBattery,
-        'miningStatusText' => ($pvKwh >= $miningMinBattery) ? number_format($pvKwh - $miningMinBattery, 1) . ' kWh' : 'nix',
-        'miningStatusClass' => ($pvKwh >= $miningMinBattery) ? 'text-success' : 'text-danger',
-        'formatted_pv_power' => number_format($pvPower, 0, ',', '.'),
+        'availablePower' => $pvPowerW - $houseLoad,
+        'formatted_pv_power' => number_format($pvPowerW, 0, ',', '.'),
         'formatted_battery_kwh' => number_format($pvKwh, 1, ',', '.'),
         'formatted_battery_capacity' => number_format($pv['batterie_stand']['capacity_kwh'] ?? 49.9, 1, ',', '.'),
-        'formatted_mining_min_battery' => number_format($miningMinBattery, 1, ',', '.'),
         'formatted_haus_last' => number_format($houseLoad, 0, ',', '.'),
-        'formatted_available_power' => number_format($pvPower - $houseLoad, 0, ',', '.')
+        'formatted_available_power' => number_format($pvPowerW - $houseLoad, 0, ',', '.')
     ];
 }
 
