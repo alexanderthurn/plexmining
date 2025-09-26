@@ -58,6 +58,10 @@ function fetchAndRenderMiners() {
             // expose settings early for downstream renderers (graphs, tables)
             if (data && data.settings) {
                 window.__plexSettings = data.settings;
+                // Load auto-mode from settings
+                loadAndApplyAutoMode();
+                // Load system-scale from settings
+                loadAndApplySystemScale();
             }
 
             if (data && Array.isArray(data.miners)) {
@@ -370,19 +374,94 @@ function renderHourlyWeather(hourlyData) {
 
 
 // Auto Mode and Control Functions
+function saveAutoModeSettings(autoMode) {
+    // Get current settings
+    const currentSettings = window.__plexSettings || {};
+    
+    // Merge with new autoMode
+    const updatedSettings = Object.assign({}, currentSettings, { autoMode: autoMode });
+    
+    fetch('../api/settings.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedSettings)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Auto-mode setting saved:', data);
+        // Update local store
+        window.__plexSettings.autoMode = autoMode;
+    })
+    .catch(error => {
+        console.error('Error saving auto-mode settings:', error);
+    });
+}
+
+function loadAndApplyAutoMode() {
+    const autoModeToggle = document.getElementById('auto-mode-toggle');
+    const autoModeSettings = document.getElementById('auto-mode-settings');
+    
+    if (!autoModeToggle || !autoModeSettings) return;
+    
+    if (window.__plexSettings && typeof window.__plexSettings.autoMode === 'boolean') {
+        autoModeToggle.checked = window.__plexSettings.autoMode;
+        autoModeSettings.style.display = window.__plexSettings.autoMode ? 'block' : 'none';
+    }
+}
+
+function loadAndApplySystemScale() {
+    const systemScale = document.getElementById('system-scale');
+    const systemScaleInput = document.getElementById('system-scale-input');
+    
+    if (!systemScale || !systemScaleInput) return;
+    
+    if (window.__plexSettings && typeof window.__plexSettings.systemScale === 'number') {
+        const scaleValue = Math.max(0, Math.min(100, window.__plexSettings.systemScale));
+        systemScale.value = scaleValue;
+        systemScaleInput.value = scaleValue;
+    }
+}
+
 function setupAutoModeToggle() {
     const autoModeToggle = document.getElementById('auto-mode-toggle');
     const autoModeSettings = document.getElementById('auto-mode-settings');
     
     if (autoModeToggle && autoModeSettings) {
         autoModeToggle.addEventListener('change', function() {
-            if (this.checked) {
-                autoModeSettings.style.display = 'block';
-            } else {
-                autoModeSettings.style.display = 'none';
-            }
+            const isAutoMode = this.checked;
+            autoModeSettings.style.display = isAutoMode ? 'block' : 'none';
+            
+            // Persist to backend
+            saveAutoModeSettings(isAutoMode);
         });
     }
+}
+
+function saveSystemScaleSettings(systemScale) {
+    // Get current settings
+    const currentSettings = window.__plexSettings || {};
+    
+    // Merge with new systemScale
+    const updatedSettings = Object.assign({}, currentSettings, { systemScale: systemScale });
+    
+    fetch('../api/settings.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedSettings)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('System scale setting saved:', data);
+        // Update local store
+        window.__plexSettings.systemScale = systemScale;
+    })
+    .catch(error => {
+        console.error('Error saving system scale settings:', error);
+    });
 }
 
 function setupSystemScaleHandlers() {
@@ -392,10 +471,14 @@ function setupSystemScaleHandlers() {
     if (systemScale && systemScaleInput) {
         systemScale.addEventListener('input', function() {
             systemScaleInput.value = this.value;
+            // Persist to backend
+            saveSystemScaleSettings(parseInt(this.value, 10));
         });
         
         systemScaleInput.addEventListener('input', function() {
             systemScale.value = this.value;
+            // Persist to backend
+            saveSystemScaleSettings(parseInt(this.value, 10));
         });
     }
 }

@@ -2,5 +2,7 @@
     "c": "e",
     "pv_kwp": 120,
     "pvSystemFactor": 0.8,
-    "miningMinBatteryKwh": 15.0
+    "miningMinBatteryKwh": 15,
+    "autoMode": true,
+    "systemScale": 60
 }
