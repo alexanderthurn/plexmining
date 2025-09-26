@@ -51,7 +51,8 @@ function populateMinerTable(miners) {
         const thPerKwhDisplay = miner.th_per_kwh ? miner.th_per_kwh.toFixed(2) : '0.00';
         
         // Format Min. Batterie display
-        const minBatteryDisplay = miner.minBatteryKwh ? miner.minBatteryKwh.toFixed(1) : '15.0';
+        const minBatteryFull = (typeof miner.minBatteryFullKwh === 'number') ? formatMaybeNumberDE(miner.minBatteryFullKwh, 1) : (typeof miner.minBatteryKwh === 'number' ? formatMaybeNumberDE(miner.minBatteryKwh, 1) : '');
+        const minBatteryReduced = (typeof miner.minBatteryReducedKwh === 'number') ? formatMaybeNumberDE(miner.minBatteryReducedKwh, 1) : (typeof miner.minBatteryReducedKwh === 'undefined' && typeof miner.minBatteryKwh === 'number' ? formatMaybeNumberDE(miner.minBatteryKwh, 1) : '');
         
         row.innerHTML = `
             <td>${miner.id}</td>
@@ -59,7 +60,8 @@ function populateMinerTable(miners) {
             <td>${hashrateHtml}</td>
             <td>${powerHtml}</td>
             <td>${thPerKwhDisplay}</td>
-            <td>${minBatteryDisplay}</td>
+            <td>${minBatteryReduced}</td>
+            <td>${minBatteryFull}</td>
             <td>${miner.ip || '-'}</td>
         `;
         tbody.appendChild(row);
@@ -647,6 +649,10 @@ function setupMinerEditMode() {
         
         const minerId = miner?.id || (index !== null ? currentMiners.length + index : currentMiners.length + 1);
         
+        const powerKwValue = (typeof miner?.power_kw === 'number') ? miner.power_kw : (typeof miner?.power === 'number' ? miner.power / 1000 : '');
+        const minFullValue = (typeof miner?.minBatteryFullKwh === 'number') ? miner.minBatteryFullKwh : (typeof miner?.minBatteryKwh === 'number' ? miner.minBatteryKwh : '');
+        const minReducedValue = (typeof miner?.minBatteryReducedKwh === 'number') ? miner.minBatteryReducedKwh : '';
+
         rowDiv.innerHTML = `
             <div class="card-body p-3">
                 <div class="row g-3">
@@ -660,15 +666,19 @@ function setupMinerEditMode() {
                     </div>
                     <div class="col-md-2">
                         <label class="form-label small">Hashrate (TH/s)</label>
-                        <input type="number" class="form-control form-control-sm" data-field="hashrate" value="${miner?.hashrate || ''}" step="0.01" placeholder="300">
+                        <input type="number" class="form-control form-control-sm" data-field="hashrate" value="${miner?.hashrate ?? ''}" step="0.01" placeholder="300">
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label small">Stromaufnahme (W)</label>
-                        <input type="number" class="form-control form-control-sm" data-field="power" value="${miner?.power || ''}" step="0.1" placeholder="3500">
+                        <label class="form-label small">Stromaufnahme (kW)</label>
+                        <input type="number" class="form-control form-control-sm" data-field="power_kw" value="${powerKwValue}" step="0.1" placeholder="3.5">
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label small">Min. Batterie (kWh)</label>
-                        <input type="number" class="form-control form-control-sm" data-field="minBatteryKwh" value="${miner?.minBatteryKwh || 15.0}" step="0.1" placeholder="15.0" min="0" max="50">
+                        <label class="form-label small">Min. Batterie 100% (kWh)</label>
+                        <input type="number" class="form-control form-control-sm" data-field="minBatteryFullKwh" value="${minFullValue}" step="0.1" placeholder="20" min="0" max="100">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">Min. Batterie 60% (kWh)</label>
+                        <input type="number" class="form-control form-control-sm" data-field="minBatteryReducedKwh" value="${minReducedValue}" step="0.1" placeholder="10" min="0" max="100">
                     </div>
                     <div class="col-md-2">
                         <label class="form-label small">IP-Adresse</label>
@@ -697,7 +707,7 @@ function setupMinerEditMode() {
     }
     
     function addNewMinerRow() {
-        const newMiner = { id: '', model: '', hashrate: '', power: '', minBatteryKwh: 15.0, ip: '' };
+        const newMiner = { id: '', model: '', hashrate: '', power_kw: '', minBatteryFullKwh: 20.0, minBatteryReducedKwh: 10.0, ip: '' };
         addEditRow(newMiner);
     }
     
@@ -713,7 +723,7 @@ function setupMinerEditMode() {
         console.log('Found rows to process:', rows.length);
         
         rows.forEach((row, index) => {
-            const inputs = row.querySelectorAll('input[data-field]');
+                    const inputs = row.querySelectorAll('input[data-field]');
             const miner = {};
             
             console.log(`Processing row ${index}:`, inputs.length, 'inputs found');
@@ -724,8 +734,8 @@ function setupMinerEditMode() {
                 
                 console.log(`${field}: "${value}"`);
                 
-                if (field === 'hashrate' || field === 'power' || field === 'minBatteryKwh') {
-                    miner[field] = value && !isNaN(value) ? parseFloat(value) : (field === 'minBatteryKwh' ? 15.0 : 0);
+                if (field === 'hashrate' || field === 'power_kw' || field === 'minBatteryFullKwh' || field === 'minBatteryReducedKwh') {
+                    miner[field] = value && !isNaN(value) ? parseFloat(value) : 0;
                 } else if (field === 'id') {
                     // ID is now text field, just store as string
                     miner[field] = value || `miner-${index + 1}`;
@@ -775,8 +785,9 @@ function setupMinerEditMode() {
                     id: miner.id || `miner-${index + 1}`,
                     model: miner.model || '',
                     hashrate: typeof miner.hashrate === 'number' ? miner.hashrate : 0,
-                    power: typeof miner.power === 'number' ? miner.power : 0,
-                    minBatteryKwh: typeof miner.minBatteryKwh === 'number' ? miner.minBatteryKwh : 15.0,
+                    power_kw: typeof miner.power_kw === 'number' ? miner.power_kw : (typeof miner.power === 'number' ? miner.power / 1000 : 0),
+                    minBatteryFullKwh: typeof miner.minBatteryFullKwh === 'number' ? miner.minBatteryFullKwh : (typeof miner.minBatteryKwh === 'number' ? miner.minBatteryKwh : 0),
+                    minBatteryReducedKwh: typeof miner.minBatteryReducedKwh === 'number' ? miner.minBatteryReducedKwh : 0,
                     ip: miner.ip || ''
                 };
                 
