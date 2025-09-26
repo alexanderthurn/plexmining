@@ -33,6 +33,12 @@
                                 <input type="number" class="form-control" id="system-scale-input" min="0" max="100" value="100">
                                 <span class="input-group-text">%</span>
                             </div>
+                            <hr class="my-3">
+                            <label for="mining-min-battery" class="form-label">Min. Batterie (kWh):</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="mining-min-battery-input" min="0" max="50" step="0.1" value="15.0">
+                                <span class="input-group-text">kWh</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -216,7 +222,7 @@
                                         <th scope="col">Modell</th>
                                         <th scope="col">Max. Hashrate (TH/s)</th>
                                         <th scope="col">Max. Stromaufnahme (W)</th>
-                                        <th scope="col">TH/kWh</th>
+                                        <th scope="col">TH/s /kWh</th>
                                         <th scope="col">IP-Adresse</th>
                                     </tr>
                                 </thead>

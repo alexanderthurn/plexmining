@@ -3,7 +3,6 @@
 header('Content-Type: application/json');
 
 $settingsFile = '../data/config/settings.json';
-$minersFile = '../data/config/miners.json';
 $weatherDailyFile = '../data/config/weather-daily.json';
 $weatherHourlyFile = '../data/config/weather-hourly.json';
 $pvFile = '../data/config/pv.json';
@@ -22,11 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 $settings = json_read_assoc($settingsFile, []);
-// Prefer miners from settings, fallback to miners file
-$miners = json_read_assoc($minersFile, []); // default fallback first
-if (isset($settings['miners']) && is_array($settings['miners'])) {
-    $miners = $settings['miners'];
-}
+// Get miners from settings only
+$miners = isset($settings['miners']) && is_array($settings['miners']) ? $settings['miners'] : [];
 $weatherDaily = json_read_assoc($weatherDailyFile, []);
 $weatherHourly = json_read_assoc($weatherHourlyFile, []);
 $pv = json_read_assoc($pvFile, []);
@@ -208,7 +204,7 @@ try {
 
 $mtimes = [
     'settings' => is_file($settingsFile) ? filemtime($settingsFile) : null,
-    'miners' => is_file($minersFile) ? filemtime($minersFile) : null,
+    'miners' => is_file($settingsFile) ? filemtime($settingsFile) : null, // miners are in settings.json now
     'weather_daily' => is_file($weatherDailyFile) ? filemtime($weatherDailyFile) : null,
     'weather_hourly' => is_file($weatherHourlyFile) ? filemtime($weatherHourlyFile) : null,
     'pv' => is_file($pvFile) ? filemtime($pvFile) : null,

@@ -2,9 +2,9 @@
     "c": "e",
     "pv_kwp": 120,
     "pvSystemFactor": 0.8,
-    "miningMinBatteryKwh": 15,
+    "miningMinBatteryKwh": 12,
     "autoMode": true,
-    "systemScale": 50,
+    "systemScale": 30,
     "miners": [
         {
             "id": "1",
@@ -21,42 +21,42 @@
             "ip": "192.168.1.102"
         },
         {
-            "id": "8",
+            "id": "3",
             "model": "S19 K PRO",
             "hashrate": 150,
             "power": 3000,
             "ip": "192.168.0.1"
         },
         {
-            "id": "Besserer",
+            "id": "4",
             "model": "S 19J PRO",
             "hashrate": 110,
             "power": 3500,
             "ip": "192.168.1.107"
         },
         {
-            "id": "Ersatz",
+            "id": "5",
             "model": "S 19J PRO",
             "hashrate": 100,
             "power": 3500,
             "ip": "192.168.1.103"
         },
         {
-            "id": "4",
+            "id": "6",
             "model": "S 19J PRO",
             "hashrate": 100,
             "power": 3500,
             "ip": "192.168.1.104"
         },
         {
-            "id": "5",
+            "id": "7",
             "model": "S 19J PRO",
             "hashrate": 100,
             "power": 3500,
             "ip": "192.168.1.105"
         },
         {
-            "id": "6",
+            "id": "8",
             "model": "S 19J PRO",
             "hashrate": 100,
             "power": 3500,

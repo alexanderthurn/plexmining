@@ -73,6 +73,8 @@ function fetchAndRenderMiners() {
                 loadAndApplyAutoMode();
                 // Load system-scale from settings
                 loadAndApplySystemScale();
+                // Load mining-min-battery from settings
+                loadAndApplyMiningMinBattery();
             }
 
             if (data && Array.isArray(data.miners)) {
@@ -440,6 +442,17 @@ function loadAndApplySystemScale() {
     }
 }
 
+function loadAndApplyMiningMinBattery() {
+    const miningMinBatteryInput = document.getElementById('mining-min-battery-input');
+    
+    if (!miningMinBatteryInput) return;
+    
+    if (window.__plexSettings && typeof window.__plexSettings.miningMinBatteryKwh === 'number') {
+        const batteryValue = Math.max(0, Math.min(50, window.__plexSettings.miningMinBatteryKwh));
+        miningMinBatteryInput.value = batteryValue;
+    }
+}
+
 function setupAutoModeToggle() {
     const autoModeToggle = document.getElementById('auto-mode-toggle');
     const autoModeSettings = document.getElementById('auto-mode-settings');
@@ -474,6 +487,9 @@ function saveSystemScaleSettings(systemScale) {
         console.log('System scale setting saved:', data);
         // Update local store
         window.__plexSettings.systemScale = systemScale;
+        
+        // Reload data to refresh calculations that might depend on system scale
+        fetchAndRenderMiners();
     })
     .catch(error => {
         console.error('Error saving system scale settings:', error);
@@ -495,6 +511,45 @@ function setupSystemScaleHandlers() {
             systemScale.value = this.value;
             // Persist to backend
             saveSystemScaleSettings(parseInt(this.value, 10));
+        });
+    }
+}
+
+function saveMiningMinBatterySettings(miningMinBattery) {
+    // Get current settings
+    const currentSettings = window.__plexSettings || {};
+    
+    // Merge with new miningMinBatteryKwh
+    const updatedSettings = Object.assign({}, currentSettings, { miningMinBatteryKwh: miningMinBattery });
+    
+    fetch('../api/settings.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedSettings)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Mining min battery setting saved:', data);
+        // Update local store
+        window.__plexSettings.miningMinBatteryKwh = miningMinBattery;
+        
+        // Reload data to refresh PV calculations that depend on min battery
+        fetchAndRenderMiners();
+    })
+    .catch(error => {
+        console.error('Error saving mining min battery settings:', error);
+    });
+}
+
+function setupMiningMinBatteryHandlers() {
+    const miningMinBatteryInput = document.getElementById('mining-min-battery-input');
+    
+    if (miningMinBatteryInput) {
+        miningMinBatteryInput.addEventListener('input', function() {
+            // Persist to backend
+            saveMiningMinBatterySettings(parseFloat(this.value));
         });
     }
 }
@@ -865,6 +920,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Setup control elements
     setupAutoModeToggle();
     setupSystemScaleHandlers();
+    setupMiningMinBatteryHandlers();
     setupEmergencyStop();
     setupMinerEditMode();
     

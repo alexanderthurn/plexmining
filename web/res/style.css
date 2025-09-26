@@ -21,7 +21,7 @@ header {
 header img {
     max-height: 50px;
     margin-right: 10px;
-    margin-left: 0px;
+    margin-left: 10px;
     float: none;
 }
 
@@ -29,7 +29,7 @@ header h1 {
     margin: 0;
     font-size: 1.5em;
     margin-left: auto;
-    margin-right: 0px;
+    margin-right: 10px;
 }
 
 body {
