@@ -116,7 +116,16 @@ function fetchAndRenderMiners() {
             }
             setText('last-update', new Date().toISOString());
         })
-        .catch(function() {
+        .catch(function(error) {
+            console.error('Error fetching miner data:', error);
+            // Show user-friendly error message
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-danger mt-3';
+            errorDiv.innerHTML = '<strong>Fehler beim Laden der Daten:</strong> Die Miner-Daten konnten nicht geladen werden. Bitte versuchen Sie es später erneut.';
+            const container = document.getElementById('miner-table-body');
+            if (container && container.parentNode) {
+                container.parentNode.insertBefore(errorDiv, container);
+            }
             populateMinerTable([]);
         });
 }
