@@ -424,25 +424,32 @@ function drawSolarPanel(power) {
         .attr('transform', 'translate(' + width/2 + ',' + height/2 + ')');
 
     // Solar panel frame
+    var panelColor = power > 0 ? '#f39c12' : '#6c757d';
+    
     g.append('rect')
         .attr('x', -60)
-        .attr('y', -40)
+        .attr('y', -35)
         .attr('width', 120)
-        .attr('height', 80)
-        .attr('fill', '#343a40')
-        .attr('stroke', '#495057')
+        .attr('height', 70)
+        .attr('rx', 6)
+        .attr('fill', '#2c3e50')
+        .attr('stroke', '#34495e')
         .attr('stroke-width', 2);
 
-    // Solar cells (grid)
+    // Solar cells grid - simple and clean
     for (var i = 0; i < 6; i++) {
         for (var j = 0; j < 4; j++) {
+            var x = -50 + i * 20;
+            var y = -25 + j * 16;
+            
             g.append('rect')
-                .attr('x', -50 + i * 20)
-                .attr('y', -30 + j * 20)
+                .attr('x', x)
+                .attr('y', y)
                 .attr('width', 18)
-                .attr('height', 18)
-                .attr('fill', power > 0 ? '#ffc107' : '#6c757d')
-                .attr('stroke', '#495057')
+                .attr('height', 14)
+                .attr('rx', 2)
+                .attr('fill', power > 0 ? '#ffc107' : '#95a5a6')
+                .attr('stroke', '#2c3e50')
                 .attr('stroke-width', 1);
         }
     }
@@ -451,10 +458,10 @@ function drawSolarPanel(power) {
     if (power > 0) {
         for (var i = 0; i < 8; i++) {
             var angle = (i * 45) * Math.PI / 180;
-            var x1 = 70 + Math.cos(angle) * 20;
+            var x1 = 65 + Math.cos(angle) * 20;
             var y1 = Math.sin(angle) * 20;
-            var x2 = 70 + Math.cos(angle) * 35;
-            var y2 = Math.sin(angle) * 35;
+            var x2 = 65 + Math.cos(angle) * 30;
+            var y2 = Math.sin(angle) * 30;
             
             g.append('line')
                 .attr('x1', x1)
@@ -462,8 +469,21 @@ function drawSolarPanel(power) {
                 .attr('x2', x2)
                 .attr('y2', y2)
                 .attr('stroke', '#ffc107')
-                .attr('stroke-width', 2)
-                .attr('opacity', 0.7);
+                .attr('stroke-width', 2);
         }
+        
+        // Sun circle
+        g.append('circle')
+            .attr('cx', 65)
+            .attr('cy', 0)
+            .attr('r', 10)
+            .attr('fill', '#ffc107');
     }
+
+    // Power LED indicator
+    g.append('circle')
+        .attr('cx', -50)
+        .attr('cy', 25)
+        .attr('r', 3)
+        .attr('fill', power > 0 ? '#27ae60' : '#e74c3c');
 }

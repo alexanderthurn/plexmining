@@ -28,22 +28,33 @@ function populateMinerTable(miners) {
     (miners || []).forEach((miner, index) => {
         const row = document.createElement('tr');
         
-        // For row > 1 (index > 0), show cumulative values in gray
+        // For row > 1 (index > 0), show cumulative values in gray and + prefix
         let hashrateHtml = formatMaybeNumberDE(miner.hashrate, 0);
         let powerHtml = formatMaybeNumberDE(miner.power, 0);
         
-        if (index > 0 && (miner.cumulative_hashrate || miner.cumulative_power)) {
-            hashrateHtml += (miner.cumulative_hashrate ? 
-                ` <small class="text-muted" style="color:gray;">(${formatMaybeNumberDE(miner.cumulative_hashrate, 0)})</small>` : '');
-            powerHtml += (miner.cumulative_power ? 
-                ` <small class="text-muted" style="color:gray;">(${formatMaybeNumberDE(miner.cumulative_power, 0)})</small>` : '');
+        if (index > 0) {
+            // Add + prefix from second row onwards
+            hashrateHtml = '+' + hashrateHtml;
+            powerHtml = '+' + powerHtml;
+            
+            // Add cumulative values if available
+            if (miner.cumulative_hashrate || miner.cumulative_power) {
+                hashrateHtml += (miner.cumulative_hashrate ? 
+                    ` <small class="text-muted" style="color:gray;">(${formatMaybeNumberDE(miner.cumulative_hashrate, 0)})</small>` : '');
+                powerHtml += (miner.cumulative_power ? 
+                    ` <small class="text-muted" style="color:gray;">(${formatMaybeNumberDE(miner.cumulative_power, 0)})</small>` : '');
+            }
         }
+        
+        // Format TH/kWh display
+        const thPerKwhDisplay = miner.th_per_kwh ? miner.th_per_kwh.toFixed(2) : '0.00';
         
         row.innerHTML = `
             <td>${miner.id}</td>
             <td>${miner.model}</td>
             <td>${hashrateHtml}</td>
             <td>${powerHtml}</td>
+            <td>${thPerKwhDisplay}</td>
             <td>${miner.ip || '-'}</td>
         `;
         tbody.appendChild(row);
@@ -65,11 +76,14 @@ function fetchAndRenderMiners() {
             }
 
             if (data && Array.isArray(data.miners)) {
+                window.__latestMiners = data.miners; // Store for edit mode
                 populateMinerTable(data.miners);
             } else if (Array.isArray(data)) {
                 // Backward compat: if endpoint returns array directly
+                window.__latestMiners = data; // Store for edit mode
                 populateMinerTable(data);
             } else {
+                window.__latestMiners = []; // Store for edit mode
                 populateMinerTable([]);
             }
             // Render PV and Weather
@@ -485,6 +499,351 @@ function setupSystemScaleHandlers() {
     }
 }
 
+// Miner Edit Mode Functions
+function setupMinerEditMode() {
+    const editToggle = document.getElementById('miner-edit-mode-toggle');
+    const viewMode = document.getElementById('miner-view-mode');
+    const editMode = document.getElementById('miner-edit-mode');
+    const cancelBtn = document.getElementById('cancel-edit-btn');
+    const saveBtn = document.getElementById('save-miners-btn');
+    const addMinerBtn = document.getElementById('add-miner-btn');
+    
+    // State tracking
+    let isEditMode = false;
+    let originalMiners = [];
+    let currentMiners = [];
+    
+    if (editToggle) {
+        editToggle.addEventListener('click', function() {
+            isEditMode = !isEditMode;
+            if (isEditMode) {
+                enterEditMode();
+            } else {
+                exitEditMode();
+            }
+            updateEditToggleButton();
+        });
+    }
+    
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+            exitEditMode();
+        });
+    }
+    
+    if (saveBtn) {
+        saveBtn.addEventListener('click', function() {
+            saveMiners();
+        });
+    }
+    
+    if (addMinerBtn) {
+        addMinerBtn.addEventListener('click', function() {
+            addNewMinerRow();
+        });
+    }
+    
+    function updateEditToggleButton() {
+        if (editToggle) {
+            if (isEditMode) {
+                editToggle.innerHTML = '<i class="bi bi-x me-1"></i>Abbrechen';
+                editToggle.className = 'btn btn-secondary btn-sm me-2';
+            } else {
+                editToggle.innerHTML = '<i class="bi bi-pencil me-1"></i>Bearbeiten';
+                editToggle.className = 'btn btn-primary btn-sm me-2';
+            }
+        }
+    }
+    
+    function enterEditMode() {
+        if (viewMode && editMode) {
+            // Store the original miners first
+            originalMiners = loadMinersForEdit();
+            
+            viewMode.style.display = 'none';
+            editMode.style.display = 'block';
+            
+            renderEditMode();
+        }
+    }
+    
+    function exitEditMode() {
+        if (viewMode && editMode) {
+            viewMode.style.display = 'block';
+            editMode.style.display = 'none';
+            
+            isEditMode = false;
+            updateEditToggleButton();
+        }
+    }
+    
+    function renderEditMode() {
+        const editTable = document.getElementById('miner-edit-table');
+        if (!editTable) return;
+        
+        editTable.innerHTML = '';
+        
+        // Load current miners from settings or create from visible table
+        const miners = loadMinersForEdit();
+        currentMiners = JSON.parse(JSON.stringify(miners)); // Deep clone
+        
+        if (miners.length === 0) {
+            // Add default row if no miners exist
+            addNewMinerRow();
+        } else {
+            miners.forEach((miner, index) => {
+                addEditRow(miner, index);
+            });
+        }
+    }
+    
+    function loadMinersForEdit() {
+        console.log('Loading miners for edit...');
+        
+        // Try to get miners from latest API data first
+        if (window.__latestMiners && Array.isArray(window.__latestMiners)) {
+            console.log('Using latest miners data:', window.__latestMiners);
+            return [...window.__latestMiners];
+        }
+        
+        // Try settings data
+        if (window.__plexSettings && window.__plexSettings.miners) {
+            console.log('Using settings miners data:', window.__plexSettings.miners);
+            return [...window.__plexSettings.miners];
+        }
+        
+        // Fallback: parse existing data if available
+        const tbody = document.getElementById('miner-table-body');
+        if (tbody && tbody.children.length > 0) {
+            console.log('Parsing visible table data...');
+            // Extract from visible table
+            const miners = [];
+            Array.from(tbody.children).forEach((row, index) => {
+                const cells = row.children;
+                if (cells.length >= 5) {
+                    const idText = cells[0].textContent.trim();
+                    const hashrateText = cells[2].textContent.trim();
+                    const powerText = cells[3].textContent.trim();
+                    
+                    // Extract clean numbers for parsing (remove cumulative display info)
+                    const cleanHashrate = hashrateText.includes('(') ? hashrateText.substring(0, hashrateText.indexOf('(')).trim() : hashrateText;
+                    const cleanPower = powerText.includes('(') ? powerText.substring(0, powerText.indexOf('(')).trim() : powerText;
+                    
+                    const miner = {
+                        id: parseInt(idText) || index + 1,
+                        model: cells[1].textContent.trim(),
+                        hashrate: parseFloat(cleanHashrate) || 0,
+                        power: parseFloat(cleanPower) || 0,
+                        ip: cells[4].textContent.trim() === '-' ? '' : cells[4].textContent.trim()
+                    };
+                    miners.push(miner);
+                    console.log('Parsed miner:', miner);
+                }
+            });
+            console.log('Final parsed miners:', miners);
+            return miners;
+        }
+        
+        console.log('No miner data found, returning empty array');
+        return [];
+    }
+    
+    function addEditRow(miner, index = null) {
+        const editTable = document.getElementById('miner-edit-table');
+        if (!editTable) return;
+        
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'card mb-2';
+        
+        const minerId = miner?.id || (index !== null ? currentMiners.length + index : currentMiners.length + 1);
+        
+        rowDiv.innerHTML = `
+            <div class="card-body p-3">
+                <div class="row g-3">
+                    <div class="col-md-2">
+                        <label class="form-label small">Miner ID</label>
+                        <input type="text" class="form-control form-control-sm" data-field="id" value="${minerId}" placeholder="1">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">Modell</label>
+                        <input type="text" class="form-control form-control-sm" data-field="model" value="${miner?.model || ''}" placeholder="z.B. S23">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">Hashrate (TH/s)</label>
+                        <input type="number" class="form-control form-control-sm" data-field="hashrate" value="${miner?.hashrate || ''}" step="0.01" placeholder="300">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">Stromaufnahme (W)</label>
+                        <input type="number" class="form-control form-control-sm" data-field="power" value="${miner?.power || ''}" step="0.1" placeholder="3500">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">IP-Adresse</label>
+                        <input type="text" class="form-control form-control-sm" data-field="ip" value="${miner?.ip || ''}" placeholder="192.168.1.101">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-danger btn-sm w-100" data-remove="true">
+                            X
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        editTable.appendChild(rowDiv);
+        
+        // Add event listener for remove button
+        const removeBtn = rowDiv.querySelector('[data-remove]');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function() {
+                rowDiv.remove();
+            });
+        }
+    }
+    
+    function addNewMinerRow() {
+        const newMiner = { id: '', model: '', hashrate: '', power: '', ip: '' };
+        addEditRow(newMiner);
+    }
+    
+    function saveMiners() {
+        const editTable = document.getElementById('miner-edit-table');
+        if (!editTable) return;
+        
+        console.log('Starting save process...');
+        
+        const miners = [];
+        const rows = editTable.querySelectorAll('.card');
+        
+        console.log('Found rows to process:', rows.length);
+        
+        rows.forEach((row, index) => {
+            const inputs = row.querySelectorAll('input[data-field]');
+            const miner = {};
+            
+            console.log(`Processing row ${index}:`, inputs.length, 'inputs found');
+            
+            inputs.forEach(input => {
+                const field = input.getAttribute('data-field');
+                const value = input.value.trim();
+                
+                console.log(`${field}: "${value}"`);
+                
+                if (field === 'hashrate' || field === 'power') {
+                    miner[field] = value && !isNaN(value) ? parseFloat(value) : 0;
+                } else if (field === 'id') {
+                    // ID is now text field, just store as string
+                    miner[field] = value || `miner-${index + 1}`;
+                } else {
+                    miner[field] = value;
+                }
+            });
+            
+            // Only add valid miners (at least model filled)
+            if (miner.model && miner.model.trim() !== '') {
+                if (!miner.id || miner.id.trim() === '') {
+                    miner.id = `miner-${miners.length + 1}`;
+                }
+                miners.push(miner);
+                console.log(`Added miner:`, miner);
+            } else {
+                console.log('Skipping invalid miner:', miner);
+            }
+        });
+        
+        console.log('Final miners to save:', miners);
+        currentMiners = miners;
+        
+        // Save to backend
+        saveMinersToBackend(miners);
+    }
+    
+    function saveMinersToBackend(miners) {
+        // Merge with current settings as the settings endpoint requires the full object
+        const currentSettings = window.__plexSettings || {};
+        const updatedSettings = Object.assign({}, currentSettings, { miners: miners });
+        
+        console.log('Saving miners:', miners);
+        console.log('Updated settings:', updatedSettings);
+        
+        // First validate input
+        if (!Array.isArray(miners)) {
+            alert('Ungültige Miner-Daten');
+            return;
+        }
+        
+        // Validate each miner
+        const validMiners = [];
+        miners.forEach((miner, index) => {
+            if (miner && typeof miner === 'object') {
+                const validMiner = {
+                    id: miner.id || `miner-${index + 1}`,
+                    model: miner.model || '',
+                    hashrate: typeof miner.hashrate === 'number' ? miner.hashrate : 0,
+                    power: typeof miner.power === 'number' ? miner.power : 0,
+                    ip: miner.ip || ''
+                };
+                
+                // Only include miners with model
+                if (validMiner.model && validMiner.model.trim() !== '') {
+                    validMiners.push(validMiner);
+                }
+            }
+        });
+        
+        console.log('Validated miners:', validMiners);
+        
+        // Sort miners by efficiency (hashrate per power - best first)
+        const sortedMiners = validMiners.sort((a, b) => {
+            const efficiencyA = a.power > 0 ? a.hashrate / a.power : 0;
+            const efficiencyB = b.power > 0 ? b.hashrate / b.power : 0;
+            return efficiencyB - efficiencyA; // Descending order (best first)
+        });
+        
+        console.log('Sorted miners by efficiency:', sortedMiners);
+        
+        const finalSettings = Object.assign({}, currentSettings, { miners: sortedMiners });
+        
+        fetch('../api/settings.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(finalSettings)
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Miner settings saved successfully:', data);
+            
+            if (data && (data.ok === true || typeof data === 'object')) {
+                // Update local settings
+                window.__plexSettings = finalSettings;
+                window.__latestMiners = validMiners;
+                
+                // Exit edit mode and refresh table
+                exitEditMode();
+                
+                // Reload the miner data
+                fetchAndRenderMiners();
+                
+                alert('Miner erfolgreich gespeichert!');
+            } else {
+                console.error('Save failed:', data);
+                alert('Fehler beim Speichern. Response: ' + JSON.stringify(data));
+            }
+        })
+        .catch(error => {
+            console.error('Error saving miner settings:', error);
+            alert('Fehler beim Speichern: ' + error.message);
+        });
+    }
+}
+
 function setupEmergencyStop() {
     const emergencyBtn = document.getElementById('emergency-stop');
     
@@ -507,6 +866,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupAutoModeToggle();
     setupSystemScaleHandlers();
     setupEmergencyStop();
+    setupMinerEditMode();
     
     // Add event listeners for buttons if they exist
     const apiButton = document.getElementById('api-button');

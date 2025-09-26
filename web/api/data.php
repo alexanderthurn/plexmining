@@ -22,12 +22,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 $settings = json_read_assoc($settingsFile, []);
-$miners = json_read_assoc($minersFile, []);
+// Prefer miners from settings, fallback to miners file
+$miners = json_read_assoc($minersFile, []); // default fallback first
+if (isset($settings['miners']) && is_array($settings['miners'])) {
+    $miners = $settings['miners'];
+}
 $weatherDaily = json_read_assoc($weatherDailyFile, []);
 $weatherHourly = json_read_assoc($weatherHourlyFile, []);
 $pv = json_read_assoc($pvFile, []);
 
-// Add cumulative (accumulated) values to miners for Hashrate and Power
+// Add cumulative (accumulated) values and TH/kWh calculation for miners
 if (is_array($miners)) {
     $cumulativeHashrate = 0;
     $cumulativePower = 0;
@@ -41,6 +45,17 @@ if (is_array($miners)) {
             $miner['cumulative_hashrate'] = floatval($cumulativeHashrate);
             $miner['cumulative_power'] = floatval($cumulativePower);
         }
+        
+        // Calculate TH/kWh efficiency for each miner
+        $hashrate = isset($miner['hashrate']) && is_numeric($miner['hashrate']) ? floatval($miner['hashrate']) : 0;
+        $power = isset($miner['power']) && is_numeric($miner['power']) ? floatval($miner['power']) : 0;
+        
+        // TH/kWh = (hashrate TH/s) / (power in kW)
+        // Convert power from W to kW
+        $powerInKW = $power / 1000;
+        $thPerKWh = ($powerInKW > 0) ? round($hashrate / $powerInKW, 3) : 0;
+        
+        $miner['th_per_kwh'] = $thPerKWh;
     }
     unset($miner); // break reference
 }
