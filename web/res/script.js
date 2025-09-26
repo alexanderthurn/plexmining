@@ -101,7 +101,13 @@ function renderPV(pv) {
     // Check if we have server-calculated values
     if (pv.calculated) {
         // Use pre-calculated server-side values (already formatted in German locale)
-        setText('pv-leistung', pv.calculated.formatted_pv_power);
+        var pvPower = typeof pv.pv_leistung_w !== 'undefined' ? pv.pv_leistung_w : 0;
+        var pvKwp = window.__plexSettings && window.__plexSettings.pv_kwp !== 'undefined' ? window.__plexSettings.pv_kwp : 120;
+        var pvMaxPowerW = pvKwp * 1000; // Convert kWp to watts  
+        var pvPowerPercent = pvMaxPowerW > 0 ? (pvPower / pvMaxPowerW * 100) : 0;
+        
+        setText('pv-leistung', pv.calculated.formatted_pv_power + ' W (' + Math.round(pvPowerPercent * 10) / 10 + '%)');
+        setText('pv-kwp', pvKwp);
         setText('batterie-kwh', pv.calculated.formatted_battery_capacity);
         setText('batterie-current', pv.calculated.formatted_battery_kwh);
         setText('mining-min-battery', pv.calculated.formatted_mining_min_battery);
@@ -139,7 +145,12 @@ function renderPV(pv) {
         }
         
         var pvPower = typeof pv.pv_leistung_w !== 'undefined' ? pv.pv_leistung_w : 0;
-        setText('pv-leistung', formatNumberDE(pvPower, 0));
+        var pvKwp = window.__plexSettings && window.__plexSettings.pv_kwp !== 'undefined' ? window.__plexSettings.pv_kwp : 120;
+        var pvMaxPowerW = pvKwp * 1000; // Convert kWp to watts  
+        var pvPowerPercent = pvMaxPowerW > 0 ? (pvPower / pvMaxPowerW * 100) : 0;
+        
+        setText('pv-leistung', formatNumberDE(pvPower, 0) + ' W (' + Math.round(pvPowerPercent * 10) / 10 + '%)');
+        setText('pv-kwp', pvKwp);
         
         var batteryKwh = pv.batterie_stand && typeof pv.batterie_stand.kwh !== 'undefined' ? pv.batterie_stand.kwh : 0;
         var batteryPercent = pv.batterie_stand && typeof pv.batterie_stand.percent !== 'undefined' ? pv.batterie_stand.percent : 0;
