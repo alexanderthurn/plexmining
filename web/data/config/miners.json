@@ -1,10 +1,10 @@
 [
-  { "id": 1, "model": "S23", "status": "Running", "hashrate": 300, "power": 3500, "temperature": 75, "btcPerKwh": 0, "euroPerKwh": 0.15 },
-  { "id": 2, "model": "S21", "status": "Error", "hashrate": 0, "power": 0, "temperature": "N/A", "btcPerKwh": 0, "euroPerKwh": 0.10 },
-  { "id": 3, "model": "S 19J PRO", "status": "Idle", "hashrate": 0, "power": 0, "temperature": "N/A", "btcPerKwh": 0.0001, "euroPerKwh": 0.05 },
-  { "id": 4, "model": "S 19J PRO", "status": "Idle", "hashrate": 0, "power": 0, "temperature": "N/A", "btcPerKwh": 0.0001, "euroPerKwh": 0.05 },
-  { "id": 5, "model": "S 19J PRO", "status": "Idle", "hashrate": 0, "power": 0, "temperature": "N/A", "btcPerKwh": 0.0001, "euroPerKwh": 0.05 },
-  { "id": 6, "model": "S 19J PRO", "status": "Idle", "hashrate": 0, "power": 0, "temperature": "N/A", "btcPerKwh": 0.0001, "euroPerKwh": 0.05 },
-  { "id": 7, "model": "S 19J PRO", "status": "Idle", "hashrate": 0, "power": 0, "temperature": "N/A", "btcPerKwh": 0.0001, "euroPerKwh": 0.05 }
+  { "id": 1, "model": "S23", "hashrate": 300, "power": 3500, "ip": "192.168.1.101" },
+  { "id": 2, "model": "S21", "hashrate": 200, "power": 3500, "ip": "192.168.1.102" },
+  { "id": 3, "model": "S 19J PRO", "hashrate": 100, "power": 3500, "ip": "192.168.1.103" },
+  { "id": 4, "model": "S 19J PRO", "hashrate": 100, "power": 3500, "ip": "192.168.1.104" },
+  { "id": 5, "model": "S 19J PRO", "hashrate": 100, "power": 3500, "ip": "192.168.1.105" },
+  { "id": 6, "model": "S 19J PRO", "hashrate": 100, "power": 3500, "ip": "192.168.1.106" },
+  { "id": 7, "model": "S 19J PRO", "hashrate": 100, "power": 3500, "ip": "192.168.1.107" }
 ]
 

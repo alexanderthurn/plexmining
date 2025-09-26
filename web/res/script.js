@@ -25,21 +25,31 @@ function populateMinerTable(miners) {
     
     tbody.innerHTML = '';
     
-    (miners || []).forEach(miner => {
+    (miners || []).forEach((miner, index) => {
         const row = document.createElement('tr');
+        
+        // For row > 1 (index > 0), show cumulative values in gray
+        let hashrateHtml = formatMaybeNumberDE(miner.hashrate, 0);
+        let powerHtml = formatMaybeNumberDE(miner.power, 0);
+        
+        if (index > 0 && (miner.cumulative_hashrate || miner.cumulative_power)) {
+            hashrateHtml += (miner.cumulative_hashrate ? 
+                ` <small class="text-muted" style="color:gray;">(${formatMaybeNumberDE(miner.cumulative_hashrate, 0)})</small>` : '');
+            powerHtml += (miner.cumulative_power ? 
+                ` <small class="text-muted" style="color:gray;">(${formatMaybeNumberDE(miner.cumulative_power, 0)})</small>` : '');
+        }
+        
         row.innerHTML = `
             <td>${miner.id}</td>
             <td>${miner.model}</td>
-            <td><span class="badge ${getStatusBadgeClass(miner.status)}">${miner.status}</span></td>
-            <td>${formatMaybeNumberDE(miner.hashrate, 0)}</td>
-            <td>${formatMaybeNumberDE(miner.power, 0)}</td>
-            <td>${typeof miner.temperature === 'number' ? formatNumberDE(miner.temperature, 0) : (miner.temperature || '')}</td>
-            <td>${formatMaybeNumberDE(miner.btcPerKwh, 5)}</td>
-            <td>${formatMaybeNumberDE(miner.euroPerKwh, 2)}</td>
+            <td>${hashrateHtml}</td>
+            <td>${powerHtml}</td>
+            <td>${miner.ip || '-'}</td>
         `;
         tbody.appendChild(row);
     });
 }
+
 
 function fetchAndRenderMiners() {
     fetch(dataApiUrl)
@@ -52,11 +62,9 @@ function fetchAndRenderMiners() {
 
             if (data && Array.isArray(data.miners)) {
                 populateMinerTable(data.miners);
-                renderMinerCounts(data.miners);
             } else if (Array.isArray(data)) {
                 // Backward compat: if endpoint returns array directly
                 populateMinerTable(data);
-                renderMinerCounts(data);
             } else {
                 populateMinerTable([]);
             }
@@ -79,9 +87,6 @@ function fetchAndRenderMiners() {
                 setRelativeTimestamp('ts-pv', data.mtimes.pv);
                 setRelativeTimestamp('ts-weather', data.mtimes.weather_daily);
                 setRelativeTimestamp('ts-miners', data.mtimes.miners);
-                setRelativeTimestamp('ts-system', data.mtimes.settings);
-                setRelativeTimestamp('ts-economy', data.mtimes.pv);
-                setRelativeTimestamp('ts-forecast', data.mtimes.weather_daily);
                 setRelativeTimestamp('ts-weather-hourly', data.mtimes.weather_hourly);
             }
             setText('last-update', new Date().toISOString());
@@ -363,16 +368,60 @@ function renderHourlyWeather(hourlyData) {
     } catch (e) { /* no-op */ }
 }
 
-function renderMinerCounts(miners) {
-    if (!Array.isArray(miners)) return;
-    var total = miners.length;
-    var active = miners.filter(function(m) { return m.status === 'Running'; }).length;
-    setText('miner-anzahl', active + ' / ' + total);
+
+// Auto Mode and Control Functions
+function setupAutoModeToggle() {
+    const autoModeToggle = document.getElementById('auto-mode-toggle');
+    const autoModeSettings = document.getElementById('auto-mode-settings');
+    
+    if (autoModeToggle && autoModeSettings) {
+        autoModeToggle.addEventListener('change', function() {
+            if (this.checked) {
+                autoModeSettings.style.display = 'block';
+            } else {
+                autoModeSettings.style.display = 'none';
+            }
+        });
+    }
+}
+
+function setupSystemScaleHandlers() {
+    const systemScale = document.getElementById('system-scale');
+    const systemScaleInput = document.getElementById('system-scale-input');
+    
+    if (systemScale && systemScaleInput) {
+        systemScale.addEventListener('input', function() {
+            systemScaleInput.value = this.value;
+        });
+        
+        systemScaleInput.addEventListener('input', function() {
+            systemScale.value = this.value;
+        });
+    }
+}
+
+function setupEmergencyStop() {
+    const emergencyBtn = document.getElementById('emergency-stop');
+    
+    if (emergencyBtn) {
+        emergencyBtn.addEventListener('click', function() {
+            if (confirm('ALARM: Alle Miner werden sofort heruntergefahren!\n\nFür den Not-Aus bestätigen.')) {
+                console.log('EMERGENCY STOP - All miners are being shut down!');
+                // TODO: Implement emergency stop API call
+                alert('NOT-AUS aktiviert - alle Miner werden heruntergefahren');
+            }
+        });
+    }
 }
 
 // Initialize the page when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     fetchAndRenderMiners();
+    
+    // Setup control elements
+    setupAutoModeToggle();
+    setupSystemScaleHandlers();
+    setupEmergencyStop();
     
     // Add event listeners for buttons if they exist
     const apiButton = document.getElementById('api-button');

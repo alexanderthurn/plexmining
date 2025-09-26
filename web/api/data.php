@@ -27,6 +27,24 @@ $weatherDaily = json_read_assoc($weatherDailyFile, []);
 $weatherHourly = json_read_assoc($weatherHourlyFile, []);
 $pv = json_read_assoc($pvFile, []);
 
+// Add cumulative (accumulated) values to miners for Hashrate and Power
+if (is_array($miners)) {
+    $cumulativeHashrate = 0;
+    $cumulativePower = 0;
+    
+    foreach ($miners as $index => &$miner) {
+        isset($miner['hashrate']) && is_numeric($miner['hashrate']) && ($cumulativeHashrate += floatval($miner['hashrate']));
+        isset($miner['power']) && is_numeric($miner['power']) && ($cumulativePower += floatval($miner['power']));
+        
+        // Add cumulative values from index 1 (second miner) onwards
+        if ($index > 0) {
+            $miner['cumulative_hashrate'] = floatval($cumulativeHashrate);
+            $miner['cumulative_power'] = floatval($cumulativePower);
+        }
+    }
+    unset($miner); // break reference
+}
+
 // Post-processing: Calculate PV energy for weather data
 function calculatePVEnergy($radiationWh, $pvKwp, $pvFactor) {
     if (!is_numeric($radiationWh) || !is_numeric($pvKwp) || !is_numeric($pvFactor)) {
