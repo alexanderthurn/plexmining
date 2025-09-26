@@ -6,7 +6,7 @@ $use_fake_data = $_GET['fake'] ?? false; // Check for GET parameter
 if ($use_fake_data) {
     $data = ['message' => 'Hello from the fake API!'];
 } else {
-    // Hier w\u00fcrde die Logik stehen, um die echten Daten von den Minern abzurufen
+    // Hier würde die Logik stehen, um die echten Daten von den Minern abzurufen
     $data = ['message' => 'Hello from the real API! (Miner data would be here)'];
 }
 
