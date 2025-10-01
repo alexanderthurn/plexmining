@@ -21,21 +21,24 @@
                     "power_kw": 1.6,
                     "battery_min_kwh": 20,
                     "pv_forecast_hours": 0,
-                    "pv_forecast_min_kwh": 0
+                    "pv_forecast_min_kwh": 0,
+                    "color": "#ff0000"
                 },
                 {
                     "label": "Full Up",
                     "power_kw": 3.5,
                     "battery_min_kwh": 20,
                     "pv_forecast_hours": 2,
-                    "pv_forecast_min_kwh": 20
+                    "pv_forecast_min_kwh": 20,
+                    "color": "#940000"
                 },
                 {
                     "label": "Full",
                     "power_kw": 3.5,
                     "battery_min_kwh": 40,
                     "pv_forecast_hours": 12,
-                    "pv_forecast_min_kwh": 30
+                    "pv_forecast_min_kwh": 30,
+                    "color": "#6b0000"
                 }
             ]
         },
@@ -51,14 +54,16 @@
                     "power_kw": 1.6,
                     "battery_min_kwh": 40,
                     "pv_forecast_hours": 12,
-                    "pv_forecast_min_kwh": 40
+                    "pv_forecast_min_kwh": 40,
+                    "color": "#3498db"
                 },
                 {
                     "label": "Full",
                     "power_kw": 3.5,
                     "battery_min_kwh": 45,
                     "pv_forecast_hours": 12,
-                    "pv_forecast_min_kwh": 50
+                    "pv_forecast_min_kwh": 50,
+                    "color": "#2d579a"
                 }
             ]
         },
@@ -74,7 +79,8 @@
                     "power_kw": 3.5,
                     "battery_min_kwh": 45,
                     "pv_forecast_hours": 1,
-                    "pv_forecast_min_kwh": 10
+                    "pv_forecast_min_kwh": 10,
+                    "color": "#8a8a8a"
                 }
             ]
         },
@@ -90,7 +96,8 @@
                     "power_kw": 3.5,
                     "battery_min_kwh": 45,
                     "pv_forecast_hours": 1,
-                    "pv_forecast_min_kwh": 15
+                    "pv_forecast_min_kwh": 15,
+                    "color": "#bababa"
                 }
             ]
         },
@@ -106,7 +113,8 @@
                     "power_kw": 3.5,
                     "battery_min_kwh": 45,
                     "pv_forecast_hours": 1,
-                    "pv_forecast_min_kwh": 20
+                    "pv_forecast_min_kwh": 20,
+                    "color": "#919191"
                 }
             ]
         },
@@ -122,7 +130,8 @@
                     "power_kw": 3.5,
                     "battery_min_kwh": 45,
                     "pv_forecast_hours": 1,
-                    "pv_forecast_min_kwh": 25
+                    "pv_forecast_min_kwh": 25,
+                    "color": "#999999"
                 }
             ]
         },
@@ -138,7 +147,8 @@
                     "power_kw": 3.5,
                     "battery_min_kwh": 45,
                     "pv_forecast_hours": 1,
-                    "pv_forecast_min_kwh": 30
+                    "pv_forecast_min_kwh": 30,
+                    "color": "#8c8c8c"
                 }
             ]
         }

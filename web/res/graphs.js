@@ -576,23 +576,13 @@ function drawHourlyForecastChart(forecast, batteryStatus, miners) {
         .domain([0, maxHashrate]).nice()
         .range([innerHeight, 0]);
     
-    // Generate unique miner IDs and assign colors
-    var allMinerIds = [];
-    forecast.forecast.forEach(function(d) {
-        if (d.running_miners) {
-            d.running_miners.forEach(function(m) {
-                if (allMinerIds.indexOf(m.miner_id) === -1) {
-                    allMinerIds.push(m.miner_id);
-                }
-            });
-        }
-    });
-    allMinerIds.sort();
-    
-    // Color scale for miners
-    var colorScale = d3.scaleOrdinal()
-        .domain(allMinerIds)
-        .range(['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22', '#34495e']);
+    // Function to get level color from miner configuration
+    function getLevelColor(minerId, levelIndex) {
+        if (!miners || !Array.isArray(miners)) return '#999';
+        var miner = miners.find(function(m) { return m.id === minerId; });
+        if (!miner || !miner.levels || !miner.levels[levelIndex]) return '#999';
+        return miner.levels[levelIndex].color || '#999';
+    }
 
     // Axis with ticks at 0:00 and 12:00
     var tickTimes = timestamps.filter(function(ts) {
@@ -714,7 +704,7 @@ function drawHourlyForecastChart(forecast, batteryStatus, miners) {
                 .attr('y', yOffset - barHeight)
                 .attr('width', barWidth)
                 .attr('height', barHeight)
-                .attr('fill', colorScale(miner.miner_id))
+                .attr('fill', getLevelColor(miner.miner_id, miner.level_index))
                 .attr('opacity', 0.7)
                 .style('pointer-events', 'none');
             
@@ -827,56 +817,6 @@ function drawHourlyForecastChart(forecast, batteryStatus, miners) {
                 .duration(500)
                 .style('opacity', 0);
         });
-
-    var legend = svg.append('g')
-        .attr('class', 'forecast-legend')
-        .attr('transform', 'translate(' + (margin.left) + ',' + (margin.top) + ')');
-
-    var items = [
-        { label: 'Speicher (kWh)', color: '#0d6efd', type: 'line' }
-    ];
-
-    items.forEach(function(item, idx) {
-        var itemGroup = legend.append('g').attr('transform', 'translate(0,' + (idx * 18) + ')');
-        itemGroup.append('line')
-            .attr('x1', 0)
-            .attr('x2', 12)
-            .attr('y1', -4)
-            .attr('y2', -4)
-            .attr('stroke', item.color)
-            .attr('stroke-width', 2)
-            .attr('stroke-dasharray', item.type === 'line-dashed' ? '6,3' : '');
-        itemGroup.append('text')
-            .attr('x', 18)
-            .attr('y', -4)
-            .attr('alignment-baseline', 'middle')
-            .style('font-size', '11px')
-            .style('fill', '#495057')
-            .text(item.label);
-    });
-
-    // Add miner legend entries with colored boxes
-    allMinerIds.forEach(function(minerId, idx) {
-        var minerInfo = minerMap[minerId];
-        var minerLabel = minerInfo ? (minerInfo.model + ' #' + minerInfo.id) : ('Miner ' + minerId);
-        var itemGroup = legend.append('g').attr('transform', 'translate(150,' + (idx * 18) + ')');
-        
-        itemGroup.append('rect')
-            .attr('x', 0)
-            .attr('y', -10)
-            .attr('width', 12)
-            .attr('height', 12)
-            .attr('fill', colorScale(minerId))
-            .attr('opacity', 0.7);
-        
-        itemGroup.append('text')
-            .attr('x', 18)
-            .attr('y', -4)
-            .attr('alignment-baseline', 'middle')
-            .style('font-size', '11px')
-            .style('fill', '#495057')
-            .text(minerLabel);
-    });
 
     var todayLine = new Date();
     todayLine.setMinutes(0, 0, 0);

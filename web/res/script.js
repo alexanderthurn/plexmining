@@ -53,6 +53,11 @@ function getLevelSummary(level) {
     return formatLevelSummaryLocal(level);
 }
 
+function getDefaultColor(index) {
+    const defaultColors = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22', '#34495e', '#16a085', '#d35400'];
+    return defaultColors[index % defaultColors.length];
+}
+
 function normalizeLevelList(levels) {
     if (!Array.isArray(levels)) return [];
     const cleaned = levels
@@ -62,12 +67,14 @@ function normalizeLevelList(levels) {
             const battery = toNumberOrNull(level?.battery_min_kwh);
             const pvHours = toNumberOrNull(level?.pv_forecast_hours);
             const pvEnergy = toNumberOrNull(level?.pv_forecast_min_kwh);
+            const color = level?.color || getDefaultColor(index);
             return {
                 label,
                 power_kw: power ?? 0,
                 battery_min_kwh: battery ?? 0,
                 pv_forecast_hours: pvHours ?? 0,
-                pv_forecast_min_kwh: pvEnergy ?? 0
+                pv_forecast_min_kwh: pvEnergy ?? 0,
+                color: color
             };
         })
         .filter(level => level.power_kw > 0);
@@ -131,7 +138,8 @@ function populateMinerTable(miners) {
             ? levelSource.map(level => {
                 const label = level.label || '';
                 const summary = getLevelSummary(level);
-                return `<div><strong>${label}</strong>: ${summary}</div>`;
+                const color = level.color || '#999';
+                return `<div><span style="display:inline-block; width:12px; height:12px; background-color:${color}; border-radius:2px; margin-right:4px;"></span><strong>${label}</strong>: ${summary}</div>`;
             }).join('')
             : '<span class="text-muted">Keine Regeln</span>';
         
@@ -1091,12 +1099,17 @@ function setupMinerEditMode() {
         const battery = level.battery_min_kwh ?? '';
         const pvHours = level.pv_forecast_hours ?? '';
         const pvEnergy = level.pv_forecast_min_kwh ?? '';
+        const color = level.color || getDefaultColor(levelIndex);
         return `
             <div class="border rounded p-2 mb-2" data-level-row="true">
                 <div class="row g-2 align-items-end">
                     <div class="col-md-2">
                         <label class="form-label small">Label</label>
                         <input type="text" class="form-control form-control-sm" data-level-field="label" value="${label}">
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label small">Farbe</label>
+                        <input type="color" class="form-control form-control-sm form-control-color" data-level-field="color" value="${color}">
                     </div>
                     <div class="col-md-2">
                         <label class="form-label small">Leistung (kW)</label>
@@ -1106,7 +1119,7 @@ function setupMinerEditMode() {
                         <label class="form-label small">Min. Batterie (kWh)</label>
                         <input type="number" step="0.1" min="0" class="form-control form-control-sm" data-level-field="battery_min_kwh" value="${battery}">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label small">PV Prognose (kWh)</label>
                         <input type="number" step="0.1" min="0" class="form-control form-control-sm" data-level-field="pv_forecast_min_kwh" value="${pvEnergy}">
                     </div>
@@ -1126,7 +1139,7 @@ function setupMinerEditMode() {
             </div>
         `;
     }
-
+    
     function createLevelTemplate(order) {
         return {
             label: `Level ${order}`,
@@ -1327,7 +1340,7 @@ function setupMinerEditMode() {
             const level = {};
             rowEl.querySelectorAll('[data-level-field]').forEach(fieldEl => {
                 const key = fieldEl.getAttribute('data-level-field');
-                if (key === 'label') {
+                if (key === 'label' || key === 'color') {
                     level[key] = fieldEl.value.trim();
                 } else {
                     level[key] = toNumberOrNull(fieldEl.value.trim());
