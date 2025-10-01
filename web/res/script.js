@@ -506,8 +506,8 @@ function loadAndApplySystemScale() {
     const longitudeInput = document.getElementById('longitude');
     
     if (systemScale && systemScaleInput) {
-        if (window.__plexSettings && typeof window.__plexSettings.pvPowerScale === 'number') {
-            const scalePercent = Math.max(0, Math.min(200, window.__plexSettings.pvPowerScale * 100));
+        if (window.__plexSettings && typeof window.__plexSettings.weatherPowerScale === 'number') {
+            const scalePercent = Math.max(0, Math.min(200, window.__plexSettings.weatherPowerScale * 100));
             systemScale.value = scalePercent;
             systemScaleInput.value = scalePercent;
         }
@@ -580,7 +580,7 @@ function savePvPowerScaleSettings(scalePercent) {
     const currentSettings = window.__plexSettings || {};
     const scaleFactor = Math.max(0, scalePercent) / 100;
     
-    const updatedSettings = Object.assign({}, currentSettings, { pvPowerScale: scaleFactor });
+    const updatedSettings = Object.assign({}, currentSettings, { weatherPowerScale: scaleFactor });
     
     fetch('../api/settings.php', {
         method: 'POST',
@@ -591,7 +591,7 @@ function savePvPowerScaleSettings(scalePercent) {
     })
     .then(response => response.json())
     .then(data => {
-        window.__plexSettings.pvPowerScale = scaleFactor;
+        window.__plexSettings.weatherPowerScale = scaleFactor;
         fetchAndRenderMiners();
     })
     .catch(error => {

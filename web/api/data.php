@@ -184,7 +184,7 @@ function calculatePVEnergyHourly($tiltedIrradiance, $pvKwp, $pvFactor) {
 if (is_array($weatherDaily) && isset($settings['pv_kwp']) && isset($settings['pvSystemFactor'])) {
     $pvKwp = floatval($settings['pv_kwp']);
     $pvFactor = floatval($settings['pvSystemFactor']);
-    $pvScale = isset($settings['pvPowerScale']) && is_numeric($settings['pvPowerScale']) ? floatval($settings['pvPowerScale']) : 1.0;
+    $pvScale = isset($settings['weatherPowerScale']) && is_numeric($settings['weatherPowerScale']) ? floatval($settings['weatherPowerScale']) : 1.0;
     
     foreach ($weatherDaily as &$day) {
         if (isset($day['shortwave_radiation_sum_Wh_m2']) && is_numeric($day['shortwave_radiation_sum_Wh_m2'])) {
@@ -198,7 +198,7 @@ if (is_array($weatherDaily) && isset($settings['pv_kwp']) && isset($settings['pv
 if (is_array($weatherHourly) && isset($settings['pv_kwp']) && isset($settings['pvSystemFactor'])) {
     $pvKwp = floatval($settings['pv_kwp']);
     $pvFactor = floatval($settings['pvSystemFactor']);
-    $pvScale = isset($settings['pvPowerScale']) && is_numeric($settings['pvPowerScale']) ? floatval($settings['pvPowerScale']) : 1.0;
+    $pvScale = isset($settings['weatherPowerScale']) && is_numeric($settings['weatherPowerScale']) ? floatval($settings['weatherPowerScale']) : 1.0;
     
     foreach ($weatherHourly as &$hour) {
         if (isset($hour['global_tilted_irradiance']) && is_numeric($hour['global_tilted_irradiance'])) {
