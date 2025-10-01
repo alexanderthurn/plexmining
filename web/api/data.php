@@ -221,6 +221,7 @@ if (is_array($weatherHourly) && count($weatherHourly) > 0 && isset($miners) && i
     $now->setTime((int)$now->format('H'), 0, 0);
 
     $baseLoad = isset($settings['houseBaseLoad']) && is_numeric($settings['houseBaseLoad']) ? floatval($settings['houseBaseLoad']) : 0.0;
+    $minerPowerScale = isset($settings['minerPowerScale']) && is_numeric($settings['minerPowerScale']) ? floatval($settings['minerPowerScale']) : 1.0;
     $batteryStartKwh = floatval($pv['batterie_stand']['kwh'] ?? 0);
     $batteryCapacityKwh = floatval($pv['batterie_stand']['capacity_kwh'] ?? 0);
     
@@ -342,6 +343,9 @@ if (is_array($weatherHourly) && count($weatherHourly) > 0 && isset($miners) && i
                 $powerKw = floatval($selectedLevel['power_kw'] ?? 0);
                 $hashrateTh = floatval($miner['hashrate'] ?? 0);
                 
+                // Apply miner power scale factor
+                $scaledPowerKw = $powerKw * $minerPowerScale;
+                
                 // Calculate proportional hashrate based on power level vs max power
                 $maxPowerKw = floatval($miner['power_kw'] ?? 1);
                 $powerRatio = $maxPowerKw > 0 ? ($powerKw / $maxPowerKw) : 0;
@@ -350,7 +354,7 @@ if (is_array($weatherHourly) && count($weatherHourly) > 0 && isset($miners) && i
                 $runningMiners[] = [
                     'miner_id' => $miner['id'],
                     'level_index' => $selectedLevelIndex,
-                    'power_kw' => $powerKw,
+                    'power_kw' => $scaledPowerKw,  // Use scaled power for calculations
                     'hashrate_th' => $effectiveHashrate
                 ];
             }
