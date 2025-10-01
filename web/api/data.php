@@ -256,29 +256,48 @@ if (is_array($weatherDaily)) {
         ];
     }
     
-    // Tomorrow (next day if available)
-    if (count($weatherDaily) > 1) {
-        $tomorrow = $weatherDaily[1] ?? [];
-        $aggregatedWeather['tomorrow'] = [
-            'sunshine_hours' => isset($tomorrow['sunshine_hours']) && is_numeric($tomorrow['sunshine_hours']) ? 
-                number_format($tomorrow['sunshine_hours'], 2, ',', '.') : '0,00',
-            'radiation_sum' => isset($tomorrow['shortwave_radiation_sum_Wh_m2']) && is_numeric($tomorrow['shortwave_radiation_sum_Wh_m2']) ? 
-                number_format($tomorrow['shortwave_radiation_sum_Wh_m2'], 0, ',', '.') : '0',
-            'pv_energy' => isset($tomorrow['pv_energy_kwh']) && is_numeric($tomorrow['pv_energy_kwh']) ? 
-                number_format($tomorrow['pv_energy_kwh'], 2, ',', '.') : '0,00'
+    // Determine today and tomorrow entries explicitly
+    $todayDate = new DateTime('today');
+    $tomorrowDate = new DateTime('tomorrow');
+    $todayEntry = null;
+    $tomorrowEntry = null;
+
+    foreach ($weatherDaily as $day) {
+        if (!isset($day['date'])) continue;
+        $dayDate = DateTime::createFromFormat('Y-m-d', $day['date']);
+        if (!$dayDate) continue;
+        $dayDate->setTime(0, 0, 0);
+
+        if ($dayDate == $todayDate && $todayEntry === null) {
+            $todayEntry = $day;
+        } elseif ($dayDate == $tomorrowDate && $tomorrowEntry === null) {
+            $tomorrowEntry = $day;
+        }
+
+        if ($todayEntry && $tomorrowEntry) {
+            break;
+        }
+    }
+
+    if ($todayEntry) {
+        $aggregatedWeather['today'] = [
+            'sunshine_hours' => isset($todayEntry['sunshine_hours']) && is_numeric($todayEntry['sunshine_hours']) ? 
+                number_format($todayEntry['sunshine_hours'], 2, ',', '.') : '0,00',
+            'radiation_sum' => isset($todayEntry['shortwave_radiation_sum_Wh_m2']) && is_numeric($todayEntry['shortwave_radiation_sum_Wh_m2']) ? 
+                number_format($todayEntry['shortwave_radiation_sum_Wh_m2'], 0, ',', '.') : '0',
+            'pv_energy' => isset($todayEntry['pv_energy_kwh']) && is_numeric($todayEntry['pv_energy_kwh']) ? 
+                number_format($todayEntry['pv_energy_kwh'], 2, ',', '.') : '0,00'
         ];
     }
-    
-    // Today (first day)
-    if (count($weatherDaily) > 0) {
-        $today = $weatherDaily[0] ?? [];
-        $aggregatedWeather['today'] = [
-            'sunshine_hours' => isset($today['sunshine_hours']) && is_numeric($today['sunshine_hours']) ? 
-                number_format($today['sunshine_hours'], 2, ',', '.') : '0,00',
-            'radiation_sum' => isset($today['shortwave_radiation_sum_Wh_m2']) && is_numeric($today['shortwave_radiation_sum_Wh_m2']) ? 
-                number_format($today['shortwave_radiation_sum_Wh_m2'], 0, ',', '.') : '0',
-            'pv_energy' => isset($today['pv_energy_kwh']) && is_numeric($today['pv_energy_kwh']) ? 
-                number_format($today['pv_energy_kwh'], 2, ',', '.') : '0,00'
+
+    if ($tomorrowEntry) {
+        $aggregatedWeather['tomorrow'] = [
+            'sunshine_hours' => isset($tomorrowEntry['sunshine_hours']) && is_numeric($tomorrowEntry['sunshine_hours']) ? 
+                number_format($tomorrowEntry['sunshine_hours'], 2, ',', '.') : '0,00',
+            'radiation_sum' => isset($tomorrowEntry['shortwave_radiation_sum_Wh_m2']) && is_numeric($tomorrowEntry['shortwave_radiation_sum_Wh_m2']) ? 
+                number_format($tomorrowEntry['shortwave_radiation_sum_Wh_m2'], 0, ',', '.') : '0',
+            'pv_energy' => isset($tomorrowEntry['pv_energy_kwh']) && is_numeric($tomorrowEntry['pv_energy_kwh']) ? 
+                number_format($tomorrowEntry['pv_energy_kwh'], 2, ',', '.') : '0,00'
         ];
     }
     

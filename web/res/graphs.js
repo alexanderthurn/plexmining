@@ -9,14 +9,12 @@ function drawWeatherChart(rows) {
     var today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    var data = (rows || [])
+    var rawData = (rows || [])
         .filter(function(r){ 
             if (!r || !r.date || typeof r.pv_energy_kwh === 'undefined') return false;
             var rowDate = new Date(r.date);
             rowDate.setHours(0, 0, 0, 0);
-            // Show today and next 14 days
-            var daysDiff = Math.floor((rowDate - today) / (1000 * 60 * 60 * 24));
-            return daysDiff >= 0 && daysDiff <= 14;
+            return rowDate.getTime() >= today.getTime();
         })
         .map(function(r){
             return {
@@ -26,6 +24,13 @@ function drawWeatherChart(rows) {
                 shortwave_radiation_sum_Wh_m2: Number(r.shortwave_radiation_sum_Wh_m2) || 0
             };
         });
+
+    if (rawData.length === 0) {
+        return;
+    }
+
+    // Limit to 14 days ahead
+    var data = rawData.slice(0, 15);
 
     if (data.length === 0) return;
 
@@ -189,6 +194,38 @@ function drawWeatherChart(rows) {
             .style('text-shadow', '1px 1px 2px rgba(255,255,255,0.8)')
             .text('Max: ' + formatNumberDE(maxValue, 1) + ' kWh');
     }
+
+    // Highlight today's date (clamp within domain)
+    var todayMarkerDate = new Date();
+    todayMarkerDate.setHours(0, 0, 0, 0);
+    var domainStart = data[0].date;
+    var domainEnd = data[data.length - 1].date;
+    if (todayMarkerDate < domainStart) todayMarkerDate = new Date(domainStart);
+    if (todayMarkerDate > domainEnd) todayMarkerDate = new Date(domainEnd);
+
+    var todayX = x(todayMarkerDate);
+
+    g.append('line')
+        .attr('class', 'today-line')
+        .attr('x1', todayX)
+        .attr('x2', todayX)
+        .attr('y1', 0)
+        .attr('y2', innerHeight)
+        .attr('stroke', '#0d6efd')
+        .attr('stroke-width', 2)
+        .attr('stroke-dasharray', '4,2')
+        .style('opacity', 0.7)
+        .style('pointer-events', 'none');
+
+    g.append('text')
+        .attr('class', 'today-label')
+        .attr('x', todayX + 5)
+        .attr('y', 15)
+        .style('font-size', '10px')
+        .style('font-weight', 'bold')
+        .style('fill', '#0d6efd')
+        .style('pointer-events', 'none')
+        .text('Heute');
 }
 
 function drawHourlyWeatherChart(hourlyData) {
@@ -199,8 +236,17 @@ function drawHourlyWeatherChart(hourlyData) {
     var height = container.clientHeight || 300;
     var margin = { top: 20, right: 40, bottom: 45, left: 60 };
 
+    var now = new Date();
+    var startTime = new Date(now.getTime());
+    startTime.setMinutes(0, 0, 0);
+    var endTime = new Date(startTime.getTime() + 48 * 60 * 60 * 1000); // next 48 hours
+
     var data = (hourlyData || [])
-        .filter(function(h){ return h && h.datetime && typeof h.pv_energy_kwh !== 'undefined'; })
+        .filter(function(h){ 
+            if (!h || !h.datetime || typeof h.pv_energy_kwh === 'undefined') return false;
+            var dt = new Date(h.datetime);
+            return dt >= startTime && dt <= endTime;
+        })
         .map(function(h){
             return {
                 datetime: new Date(h.datetime),
@@ -348,6 +394,34 @@ function drawHourlyWeatherChart(hourlyData) {
             .style('fill', '#198754')
             .style('text-shadow', '1px 1px 2px rgba(255,255,255,0.8)')
             .text('Max: ' + formatNumberDE(maxValue, 1) + ' kWh');
+    }
+
+    // Highlight current time (closest hour)
+    var now = new Date();
+    var currentHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours());
+    var closestHourData = data.reduce(function(prev, curr) {
+        if (!prev) return curr;
+        var prevDiff = Math.abs(prev.datetime - currentHour);
+        var currDiff = Math.abs(curr.datetime - currentHour);
+        return currDiff < prevDiff ? curr : prev;
+    }, null);
+
+    if (closestHourData) {
+        var todayX = x(closestHourData.datetime) + barWidth / 2;
+        g.append('line')
+            .attr('class', 'today-line')
+            .attr('x1', todayX)
+            .attr('x2', todayX)
+            .attr('y1', 0)
+            .attr('y2', innerHeight)
+            .style('pointer-events', 'none');
+
+        g.append('text')
+            .attr('class', 'today-label')
+            .attr('x', todayX + 5)
+            .attr('y', 15)
+            .style('pointer-events', 'none')
+            .text('Jetzt');
     }
 }
 
