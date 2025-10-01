@@ -3,7 +3,11 @@
     "pv_kwp": 120,
     "pvSystemFactor": 0.8,
     "autoMode": true,
-    "pvPowerScale": 0.1,
+    "pvPowerScale": 1,
+    "minerPowerScale": 0.33,
+    "houseBaseLoad": 2,
+    "latitude": 50.74677125714325,
+    "longitude": 7.130950005773415,
     "miners": [
         {
             "id": "1",
@@ -189,6 +193,5 @@
                 }
             ]
         }
-    ],
-    "houseBaseLoad": 2
+    ]
 }

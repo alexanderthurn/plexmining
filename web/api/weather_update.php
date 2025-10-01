@@ -2,9 +2,23 @@
 
 header('Content-Type: application/json');
 
-// Configuration (defaults mirror fetch_bonn_sunshine.sh)
-$lat = 50.7374;
-$lon = 7.0982;
+// Load settings to get latitude/longitude
+$settingsFile = '../data/config/settings.json';
+$lat = 50.7374; // default
+$lon = 7.0982; // default
+
+if (file_exists($settingsFile)) {
+    $settingsContent = file_get_contents($settingsFile);
+    $settings = json_decode($settingsContent, true);
+    if (isset($settings['latitude']) && is_numeric($settings['latitude'])) {
+        $lat = floatval($settings['latitude']);
+    }
+    if (isset($settings['longitude']) && is_numeric($settings['longitude'])) {
+        $lon = floatval($settings['longitude']);
+    }
+}
+
+// Configuration
 $days = 14;
 $timezone = 'Europe/Berlin';
 $dailyDataFile = '../data/config/weather-daily.json';

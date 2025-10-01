@@ -499,19 +499,41 @@ function loadAndApplyAutoMode() {
 function loadAndApplySystemScale() {
     const systemScale = document.getElementById('system-scale');
     const systemScaleInput = document.getElementById('system-scale-input');
+    const minerScale = document.getElementById('miner-scale');
+    const minerScaleInput = document.getElementById('miner-scale-input');
     const houseBaseLoadInput = document.getElementById('house-base-load');
+    const latitudeInput = document.getElementById('latitude');
+    const longitudeInput = document.getElementById('longitude');
     
-    if (!systemScale || !systemScaleInput) return;
-    
-    if (window.__plexSettings && typeof window.__plexSettings.pvPowerScale === 'number') {
-        const scalePercent = Math.max(0, Math.min(200, window.__plexSettings.pvPowerScale * 100));
-        systemScale.value = scalePercent;
-        systemScaleInput.value = scalePercent;
+    if (systemScale && systemScaleInput) {
+        if (window.__plexSettings && typeof window.__plexSettings.pvPowerScale === 'number') {
+            const scalePercent = Math.max(0, Math.min(200, window.__plexSettings.pvPowerScale * 100));
+            systemScale.value = scalePercent;
+            systemScaleInput.value = scalePercent;
+        }
+    }
+
+    if (minerScale && minerScaleInput) {
+        if (window.__plexSettings && typeof window.__plexSettings.minerPowerScale === 'number') {
+            const scalePercent = Math.max(0, Math.min(200, window.__plexSettings.minerPowerScale * 100));
+            minerScale.value = scalePercent;
+            minerScaleInput.value = scalePercent;
+        }
     }
 
     if (houseBaseLoadInput && window.__plexSettings && typeof window.__plexSettings.houseBaseLoad === 'number') {
         houseBaseLoadInput.value = window.__plexSettings.houseBaseLoad;
     }
+
+    if (latitudeInput && window.__plexSettings && typeof window.__plexSettings.latitude === 'number') {
+        latitudeInput.value = window.__plexSettings.latitude;
+    }
+
+    if (longitudeInput && window.__plexSettings && typeof window.__plexSettings.longitude === 'number') {
+        longitudeInput.value = window.__plexSettings.longitude;
+    }
+
+    updateOpenStreetMapLink();
 }
 
 
@@ -534,14 +556,22 @@ function setupAutoModeToggle() {
 function setAutoModeSettingsVisibility() {
     const autoModeToggle = document.getElementById('auto-mode-toggle');
     const autoModeSettings = document.getElementById('auto-mode-settings');
+    const minerScaleSettings = document.getElementById('miner-scale-settings');
     const controlAdvanced = document.getElementById('control-advanced');
 
     if (!autoModeToggle || !autoModeSettings) return;
 
-    if (controlAdvanced && controlAdvanced.style.display !== 'none' && autoModeToggle.checked) {
-        autoModeSettings.style.display = 'block';
+    if (controlAdvanced && controlAdvanced.style.display !== 'none') {
+        if (autoModeToggle.checked) {
+            autoModeSettings.style.display = 'block';
+            if (minerScaleSettings) minerScaleSettings.style.display = 'block';
+        } else {
+            autoModeSettings.style.display = 'none';
+            if (minerScaleSettings) minerScaleSettings.style.display = 'none';
+        }
     } else {
         autoModeSettings.style.display = 'none';
+        if (minerScaleSettings) minerScaleSettings.style.display = 'none';
     }
 }
 
@@ -572,7 +602,12 @@ function savePvPowerScaleSettings(scalePercent) {
 function setupSystemScaleHandlers() {
     const systemScale = document.getElementById('system-scale');
     const systemScaleInput = document.getElementById('system-scale-input');
+    const minerScale = document.getElementById('miner-scale');
+    const minerScaleInput = document.getElementById('miner-scale-input');
     const houseBaseLoadInput = document.getElementById('house-base-load');
+    const latitudeInput = document.getElementById('latitude');
+    const longitudeInput = document.getElementById('longitude');
+    const getGeolocationBtn = document.getElementById('get-geolocation-btn');
     const controlEditToggle = document.getElementById('control-edit-toggle');
     const controlAdvanced = document.getElementById('control-advanced');
     const controlSectionCol = document.getElementById('control-section-col');
@@ -589,6 +624,18 @@ function setupSystemScaleHandlers() {
         });
     }
 
+    if (minerScale && minerScaleInput) {
+        minerScale.addEventListener('input', function() {
+            minerScaleInput.value = this.value;
+            saveMinerPowerScaleSettings(parseInt(this.value, 10));
+        });
+        
+        minerScaleInput.addEventListener('input', function() {
+            minerScale.value = this.value;
+            saveMinerPowerScaleSettings(parseInt(this.value, 10));
+        });
+    }
+
     if (houseBaseLoadInput) {
         houseBaseLoadInput.addEventListener('change', function() {
             const value = parseFloat(this.value);
@@ -596,26 +643,76 @@ function setupSystemScaleHandlers() {
         });
     }
 
+    if (latitudeInput) {
+        latitudeInput.addEventListener('change', function() {
+            const value = parseFloat(this.value);
+            saveLocationSettings(isNaN(value) ? 50.7374 : value, null);
+        });
+        latitudeInput.addEventListener('input', function() {
+            updateOpenStreetMapLink();
+        });
+    }
+
+    if (longitudeInput) {
+        longitudeInput.addEventListener('change', function() {
+            const value = parseFloat(this.value);
+            saveLocationSettings(null, isNaN(value) ? 7.0982 : value);
+        });
+        longitudeInput.addEventListener('input', function() {
+            updateOpenStreetMapLink();
+        });
+    }
+
+    if (getGeolocationBtn) {
+        getGeolocationBtn.addEventListener('click', function() {
+            if (navigator.geolocation) {
+                getGeolocationBtn.disabled = true;
+                getGeolocationBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Ermittle Standort...';
+                
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        if (latitudeInput) latitudeInput.value = lat.toFixed(4);
+                        if (longitudeInput) longitudeInput.value = lon.toFixed(4);
+                        saveLocationSettings(lat, lon);
+                        getGeolocationBtn.disabled = false;
+                        getGeolocationBtn.innerHTML = '<i class="bi bi-geo-alt-fill me-1"></i>Standort automatisch ermitteln';
+                    },
+                    function(error) {
+                        console.error('Geolocation error:', error);
+                        alert('Standort konnte nicht ermittelt werden: ' + error.message);
+                        getGeolocationBtn.disabled = false;
+                        getGeolocationBtn.innerHTML = '<i class="bi bi-geo-alt-fill me-1"></i>Standort automatisch ermitteln';
+                    }
+                );
+            } else {
+                alert('Geolocation wird von diesem Browser nicht unterstützt.');
+            }
+        });
+    }
+
     if (controlEditToggle && controlAdvanced) {
         let isEditMode = false;
         const originalClass = controlSectionCol ? controlSectionCol.getAttribute('data-original-class') : null;
+        const controlNormalView = document.getElementById('control-normal-view');
 
         controlEditToggle.addEventListener('click', function() {
             isEditMode = !isEditMode;
             if (isEditMode) {
+                if (controlNormalView) controlNormalView.style.display = 'none';
                 controlAdvanced.style.display = 'block';
-                controlEditToggle.innerHTML = '<i class="bi bi-x me-1"></i>Schließen';
-                controlEditToggle.classList.remove('btn-outline-secondary');
-                controlEditToggle.classList.add('btn-secondary');
+                controlEditToggle.innerHTML = '<i class="bi bi-x me-1"></i>Abbrechen';
+                controlEditToggle.className = 'btn btn-secondary btn-sm';
                 if (controlSectionCol) {
                     controlSectionCol.className = 'col-12 mb-3';
                 }
                 setAutoModeSettingsVisibility();
             } else {
+                if (controlNormalView) controlNormalView.style.display = 'block';
                 controlAdvanced.style.display = 'none';
                 controlEditToggle.innerHTML = '<i class="bi bi-pencil me-1"></i>Bearbeiten';
-                controlEditToggle.classList.add('btn-outline-secondary');
-                controlEditToggle.classList.remove('btn-secondary');
+                controlEditToggle.className = 'btn btn-primary btn-sm';
                 if (controlSectionCol && originalClass) {
                     controlSectionCol.className = originalClass;
                 }
@@ -623,6 +720,29 @@ function setupSystemScaleHandlers() {
             }
         });
     }
+}
+
+function saveMinerPowerScaleSettings(scalePercent) {
+    const currentSettings = window.__plexSettings || {};
+    const scaleFactor = Math.max(0, scalePercent) / 100;
+    
+    const updatedSettings = Object.assign({}, currentSettings, { minerPowerScale: scaleFactor });
+    
+    fetch('../api/settings.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedSettings)
+    })
+    .then(response => response.json())
+    .then(data => {
+        window.__plexSettings.minerPowerScale = scaleFactor;
+        fetchAndRenderMiners();
+    })
+    .catch(error => {
+        console.error('Error saving miner scale settings:', error);
+    });
 }
 
 function saveHouseBaseLoadSettings(baseLoad) {
@@ -644,6 +764,48 @@ function saveHouseBaseLoadSettings(baseLoad) {
     .catch(error => {
         console.error('Error saving house base load settings:', error);
     });
+}
+
+function saveLocationSettings(latitude, longitude) {
+    const currentSettings = window.__plexSettings || {};
+    const updatedSettings = Object.assign({}, currentSettings);
+    
+    if (latitude !== null) {
+        updatedSettings.latitude = latitude;
+    }
+    if (longitude !== null) {
+        updatedSettings.longitude = longitude;
+    }
+
+    fetch('../api/settings.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedSettings)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (latitude !== null) window.__plexSettings.latitude = latitude;
+        if (longitude !== null) window.__plexSettings.longitude = longitude;
+        console.log('Location settings saved:', { latitude, longitude });
+        updateOpenStreetMapLink();
+    })
+    .catch(error => {
+        console.error('Error saving location settings:', error);
+    });
+}
+
+function updateOpenStreetMapLink() {
+    const latitudeInput = document.getElementById('latitude');
+    const longitudeInput = document.getElementById('longitude');
+    const osmLink = document.getElementById('openstreetmap-link');
+    
+    if (osmLink && latitudeInput && longitudeInput) {
+        const lat = parseFloat(latitudeInput.value) || 50.7374;
+        const lon = parseFloat(longitudeInput.value) || 7.0982;
+        osmLink.href = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=15`;
+    }
 }
 
 
