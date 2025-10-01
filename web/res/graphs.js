@@ -525,6 +525,23 @@ function drawHourlyForecastChart(forecast, batteryStatus, miners) {
 
     container.innerHTML = '';
     
+    // Calculate average hashrate over the entire period
+    var totalHashrate = 0;
+    var count = 0;
+    forecast.forecast.forEach(function(d) {
+        if (d.total_hashrate_th !== undefined) {
+            totalHashrate += d.total_hashrate_th;
+            count++;
+        }
+    });
+    var avgHashrate = count > 0 ? (totalHashrate / count) : 0;
+    
+    // Update the title with average hashrate
+    var avgHashrateEl = document.getElementById('mining-forecast-avg-hashrate');
+    if (avgHashrateEl) {
+        avgHashrateEl.textContent = '(Ø ' + avgHashrate.toFixed(1) + ' TH/s)';
+    }
+    
     // Create a lookup map for miner info by ID
     var minerMap = {};
     if (miners && Array.isArray(miners)) {
@@ -751,8 +768,20 @@ function drawHourlyForecastChart(forecast, batteryStatus, miners) {
                 .style('opacity', .9);
             
             // Build tooltip HTML
-            var tooltipHtml = '<strong>' + dateStr + '</strong><br/>' +
-                'Speicher: <strong>' + d.battery_level_kwh.toFixed(2) + ' kWh</strong><br/>';
+            var tooltipHtml = '<strong>' + dateStr + '</strong><br/>';
+            
+            // Battery levels (start and end)
+            if (d.battery_level_kwh_start !== undefined && d.battery_level_kwh_end !== undefined) {
+                tooltipHtml += 'Speicher (Start): <strong>' + d.battery_level_kwh_start.toFixed(2) + ' kWh</strong><br/>';
+                tooltipHtml += 'Speicher (Ende): <strong>' + d.battery_level_kwh_end.toFixed(2) + ' kWh</strong><br/>';
+            } else {
+                tooltipHtml += 'Speicher: <strong>' + d.battery_level_kwh.toFixed(2) + ' kWh</strong><br/>';
+            }
+            
+            // House base load
+            if (d.house_base_load !== undefined) {
+                tooltipHtml += 'Haus-Grundlast: ' + d.house_base_load.toFixed(1) + ' kW<br/>';
+            }
             
             // Add PV forecast horizons
             if (d.pv_forecast_horizons && Object.keys(d.pv_forecast_horizons).length > 0) {

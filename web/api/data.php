@@ -368,13 +368,16 @@ if (is_array($weatherHourly) && count($weatherHourly) > 0 && isset($miners) && i
         $hourlyDataByTime[$ts]['total_power_kw'] = $totalPowerKw;
         $hourlyDataByTime[$ts]['total_hashrate_th'] = $totalHashrateTh;
         
+        // Store battery level BEFORE this hour (at the start)
+        $hourlyDataByTime[$ts]['battery_level_kwh_start'] = $batteryValue;
+        
         // Update battery level for NEXT iteration: PV + current battery - house load - miner consumption
         $pvValue = $hourlyDataByTime[$ts]['pv_energy_kwh'];
         $net = $pvValue - $baseLoad - $totalPowerKw;
         $batteryValue = max(0, min($batteryCapacityKwh, $batteryValue + $net));
         
-        // Store battery level AFTER this hour
-        $hourlyDataByTime[$ts]['battery_level_kwh'] = $batteryValue;
+        // Store battery level AFTER this hour (at the end)
+        $hourlyDataByTime[$ts]['battery_level_kwh_end'] = $batteryValue;
     }
 
     // Build final forecast array
@@ -384,11 +387,14 @@ if (is_array($weatherHourly) && count($weatherHourly) > 0 && isset($miners) && i
             'datetime' => $data['datetime'],
             'pv_energy_kwh' => $data['pv_energy_kwh'],
             'pv_energy_kwh_accumulated' => $data['pv_energy_kwh_accumulated'],
-            'battery_level_kwh' => $data['battery_level_kwh'],
+            'battery_level_kwh' => $data['battery_level_kwh_start'], // Use start value for display
+            'battery_level_kwh_start' => $data['battery_level_kwh_start'],
+            'battery_level_kwh_end' => $data['battery_level_kwh_end'],
             'pv_forecast_horizons' => $data['pv_forecast_horizons'],
             'running_miners' => $data['running_miners'],
             'total_power_kw' => $data['total_power_kw'],
-            'total_hashrate_th' => $data['total_hashrate_th']
+            'total_hashrate_th' => $data['total_hashrate_th'],
+            'house_base_load' => $baseLoad
         ];
     }
 
