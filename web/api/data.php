@@ -23,6 +23,87 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 $settings = json_read_assoc($settingsFile, []);
 // Get miners from settings only
 $miners = isset($settings['miners']) && is_array($settings['miners']) ? $settings['miners'] : [];
+
+function normalize_levels(array $levels): array {
+    $normalized = [];
+    foreach ($levels as $index => $level) {
+        if (!is_array($level)) continue;
+        $label = isset($level['label']) && is_string($level['label']) && trim($level['label']) !== ''
+            ? trim($level['label'])
+            : 'Level ' . ($index + 1);
+        $power = isset($level['power_kw']) && is_numeric($level['power_kw']) ? (float)$level['power_kw'] : 0.0;
+        $battery = isset($level['battery_min_kwh']) && is_numeric($level['battery_min_kwh']) ? (float)$level['battery_min_kwh'] : 0.0;
+        $pvHours = isset($level['pv_forecast_hours']) && is_numeric($level['pv_forecast_hours']) ? (int)$level['pv_forecast_hours'] : 0;
+        $pvEnergy = isset($level['pv_forecast_min_kwh']) && is_numeric($level['pv_forecast_min_kwh']) ? (float)$level['pv_forecast_min_kwh'] : 0.0;
+
+        if ($power <= 0) {
+            continue; // Skip invalid power entries
+        }
+
+        $normalized[] = [
+            'label' => $label,
+            'power_kw' => $power,
+            'battery_min_kwh' => $battery,
+            'pv_forecast_hours' => $pvHours,
+            'pv_forecast_min_kwh' => $pvEnergy,
+        ];
+    }
+
+    usort($normalized, function ($a, $b) {
+        $powerCmp = $a['power_kw'] <=> $b['power_kw'];
+        if ($powerCmp !== 0) return $powerCmp;
+        return $a['battery_min_kwh'] <=> $b['battery_min_kwh'];
+    });
+
+    return $normalized;
+}
+
+function ensure_levels(array $miner): array {
+    if (!empty($miner['levels']) && is_array($miner['levels'])) {
+        $miner['levels'] = normalize_levels($miner['levels']);
+        if (!empty($miner['levels'])) {
+            return $miner;
+        }
+    }
+
+    $fallbackLevels = [];
+    $powerKw = isset($miner['power_kw']) && is_numeric($miner['power_kw']) ? (float)$miner['power_kw'] : 0.0;
+    $minFull = isset($miner['minBatteryFullKwh']) && is_numeric($miner['minBatteryFullKwh']) ? (float)$miner['minBatteryFullKwh'] : 0.0;
+    $minReduced = isset($miner['minBatteryReducedKwh']) && is_numeric($miner['minBatteryReducedKwh']) ? (float)$miner['minBatteryReducedKwh'] : 0.0;
+
+    if ($minReduced > 0 && $powerKw > 0) {
+        $fallbackLevels[] = [
+            'label' => 'Reduced',
+            'power_kw' => round($powerKw * 0.6, 2),
+            'battery_min_kwh' => $minReduced,
+            'pv_forecast_hours' => 0,
+            'pv_forecast_min_kwh' => 0.0,
+        ];
+    }
+
+    if ($powerKw > 0) {
+        $fallbackLevels[] = [
+            'label' => 'Full',
+            'power_kw' => $powerKw,
+            'battery_min_kwh' => $minFull,
+            'pv_forecast_hours' => 0,
+            'pv_forecast_min_kwh' => 0.0,
+        ];
+    }
+
+    if (empty($fallbackLevels) && $powerKw > 0) {
+        $fallbackLevels[] = [
+            'label' => 'Level 1',
+            'power_kw' => $powerKw,
+            'battery_min_kwh' => 0.0,
+            'pv_forecast_hours' => 0,
+            'pv_forecast_min_kwh' => 0.0,
+        ];
+    }
+
+    $miner['levels'] = normalize_levels($fallbackLevels);
+    return $miner;
+}
 $weatherDaily = json_read_assoc($weatherDailyFile, []);
 $weatherHourly = json_read_assoc($weatherHourlyFile, []);
 $pv = json_read_assoc($pvFile, []);
@@ -33,6 +114,10 @@ if (is_array($miners)) {
     $cumulativePowerKw = 0;
     
     foreach ($miners as $index => &$miner) {
+        if (!is_array($miner)) {
+            $miner = [];
+        }
+        $miner = ensure_levels($miner);
         $hashrate = isset($miner['hashrate']) && is_numeric($miner['hashrate']) ? floatval($miner['hashrate']) : 0;
         $powerKw = 0;
         if (isset($miner['power_kw']) && is_numeric($miner['power_kw'])) {
@@ -56,6 +141,19 @@ if (is_array($miners)) {
         $thPerKWh = ($powerInKW > 0) ? round($hashrate / $powerInKW, 3) : 0;
         
         $miner['th_per_kwh'] = $thPerKWh;
+
+        // Add derived level hints for convenience
+        if (!empty($miner['levels'])) {
+            $miner['level_summary'] = array_map(function ($level) {
+                return [
+                    'label' => $level['label'],
+                    'power_kw' => $level['power_kw'],
+                    'battery_min_kwh' => $level['battery_min_kwh'],
+                    'pv_forecast_hours' => $level['pv_forecast_hours'],
+                    'pv_forecast_min_kwh' => $level['pv_forecast_min_kwh'],
+                ];
+            }, $miner['levels']);
+        }
     }
     unset($miner); // break reference
 }

@@ -125,3 +125,34 @@ function calculatePVEnergy(radiationWh, pvKwp, pvFactor) {
     if (!isFinite(radiationWh) || !isFinite(pvKwp) || !isFinite(pvFactor)) return null;
     return (radiationWh / 1000) * pvKwp * pvFactor;
 }
+
+function parseMaybeNumber(value) {
+    if (value === null || value === undefined || value === '') return null;
+    const num = Number(value);
+    return Number.isFinite(num) ? num : null;
+}
+
+function formatPVForecast(level) {
+    if (!level) return '–';
+    const energy = parseMaybeNumber(level.pv_forecast_min_kwh);
+    const hours = parseMaybeNumber(level.pv_forecast_hours);
+    if (energy === null && hours === null) {
+        return '–';
+    }
+    const energyText = energy !== null ? formatNumberDE(energy, 1) + ' kWh' : '–';
+    const hourText = hours !== null ? hours + 'h' : '–';
+    if (energyText === '–' && hourText === '–') {
+        return '–';
+    }
+    return energyText + ' / ' + hourText;
+}
+
+function formatLevelSummary(level) {
+    if (!level) return '';
+    const power = parseMaybeNumber(level.power_kw);
+    const battery = parseMaybeNumber(level.battery_min_kwh);
+    const pv = formatPVForecast(level);
+    const powerText = power !== null ? formatNumberDE(power, 1) + ' kW' : '–';
+    const batteryText = battery !== null ? formatNumberDE(battery, 1) + ' kWh' : '–';
+    return `${powerText} · ${batteryText} · PV ${pv}`;
+}

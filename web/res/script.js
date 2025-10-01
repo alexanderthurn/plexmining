@@ -19,6 +19,82 @@ const demoMode = getParameterByName('demo') === 'true';
 const apiUrl = demoMode ? '../api/index.php?fake=true' : '../api/index.php';
 const dataApiUrl = '../api/data.php';
 
+function toNumberOrNull(value) {
+    if (value === null || value === undefined || value === '') return null;
+    const num = Number(value);
+    return Number.isFinite(num) ? num : null;
+}
+
+function formatLevelNumber(value, fractionDigits) {
+    if (typeof formatNumberDE === 'function') {
+        const num = toNumberOrNull(value);
+        if (num === null) return '–';
+        return formatNumberDE(num, fractionDigits);
+    }
+    const num = toNumberOrNull(value);
+    return num === null ? '–' : num.toFixed(fractionDigits);
+}
+
+function formatLevelSummaryLocal(level) {
+    if (!level || typeof level !== 'object') return '';
+    const power = formatLevelNumber(level.power_kw, 1) + ' kW';
+    const battery = formatLevelNumber(level.battery_min_kwh, 1) + ' kWh';
+    const pvEnergy = formatLevelNumber(level.pv_forecast_min_kwh, 1) + ' kWh';
+    const pvHoursValue = toNumberOrNull(level.pv_forecast_hours);
+    const pvHours = pvHoursValue === null ? '–' : pvHoursValue + 'h';
+    return `${power} · ${battery} · PV ${pvEnergy} / ${pvHours}`;
+}
+
+function getLevelSummary(level) {
+    if (typeof formatLevelSummary === 'function') {
+        const summary = formatLevelSummary(level);
+        if (summary) return summary;
+    }
+    return formatLevelSummaryLocal(level);
+}
+
+function normalizeLevelList(levels) {
+    if (!Array.isArray(levels)) return [];
+    const cleaned = levels
+        .map((level, index) => {
+            const label = level && level.label && level.label.trim() ? level.label.trim() : `Level ${index + 1}`;
+            const power = toNumberOrNull(level?.power_kw);
+            const battery = toNumberOrNull(level?.battery_min_kwh);
+            const pvHours = toNumberOrNull(level?.pv_forecast_hours);
+            const pvEnergy = toNumberOrNull(level?.pv_forecast_min_kwh);
+            return {
+                label,
+                power_kw: power ?? 0,
+                battery_min_kwh: battery ?? 0,
+                pv_forecast_hours: pvHours ?? 0,
+                pv_forecast_min_kwh: pvEnergy ?? 0
+            };
+        })
+        .filter(level => level.power_kw > 0);
+
+    cleaned.sort((a, b) => {
+        const powerCmp = a.power_kw - b.power_kw;
+        if (powerCmp !== 0) return powerCmp;
+        return a.battery_min_kwh - b.battery_min_kwh;
+    });
+
+    return cleaned;
+}
+
+function normalizeLevels(levels) {
+    return normalizeLevelList(levels);
+}
+
+function resolveLevels(miner) {
+    if (miner && Array.isArray(miner.levels) && miner.levels.length) {
+        return normalizeLevelList(miner.levels);
+    }
+    if (miner && Array.isArray(miner.level_summary) && miner.level_summary.length) {
+        return normalizeLevelList(miner.level_summary);
+    }
+    return [];
+}
+
 function populateMinerTable(miners) {
     const tbody = document.getElementById('miner-table-body');
     if (!tbody) return;
@@ -37,7 +113,7 @@ function populateMinerTable(miners) {
             // Add + prefix from second row onwards
             hashrateHtml = '+' + hashrateHtml;
             powerHtml = '+' + powerHtml;
-            
+        
             // Add cumulative values if available
             if (miner.cumulative_hashrate || miner.cumulative_power_kw) {
                 hashrateHtml += (miner.cumulative_hashrate ? 
@@ -49,10 +125,15 @@ function populateMinerTable(miners) {
         
         // Format TH/kWh display
         const thPerKwhDisplay = miner.th_per_kwh ? miner.th_per_kwh.toFixed(2) : '0.00';
-        
-        // Format Min. Batterie display
-        const minBatteryFull = (typeof miner.minBatteryFullKwh === 'number') ? formatMaybeNumberDE(miner.minBatteryFullKwh, 1) : (typeof miner.minBatteryKwh === 'number' ? formatMaybeNumberDE(miner.minBatteryKwh, 1) : '');
-        const minBatteryReduced = (typeof miner.minBatteryReducedKwh === 'number') ? formatMaybeNumberDE(miner.minBatteryReducedKwh, 1) : (typeof miner.minBatteryReducedKwh === 'undefined' && typeof miner.minBatteryKwh === 'number' ? formatMaybeNumberDE(miner.minBatteryKwh, 1) : '');
+
+        const levelSource = resolveLevels(miner);
+        const levelSummaries = levelSource.length > 0
+            ? levelSource.map(level => {
+                const label = level.label || '';
+                const summary = getLevelSummary(level);
+                return `<div><strong>${label}</strong>: ${summary}</div>`;
+            }).join('')
+            : '<span class="text-muted">Keine Regeln</span>';
         
         row.innerHTML = `
             <td>${miner.id}</td>
@@ -60,8 +141,7 @@ function populateMinerTable(miners) {
             <td>${hashrateHtml}</td>
             <td>${powerHtml}</td>
             <td>${thPerKwhDisplay}</td>
-            <td>${minBatteryReduced}</td>
-            <td>${minBatteryFull}</td>
+            <td>${levelSummaries}</td>
             <td>${miner.ip || '-'}</td>
         `;
         tbody.appendChild(row);
@@ -526,6 +606,12 @@ function setupMinerEditMode() {
             saveMiners();
         });
     }
+    const saveBtnSecondary = document.getElementById('save-miners-btn-secondary');
+    if (saveBtnSecondary) {
+        saveBtnSecondary.addEventListener('click', function() {
+            saveMiners();
+        });
+    }
     
     if (addMinerBtn) {
         addMinerBtn.addEventListener('click', function() {
@@ -650,9 +736,14 @@ function setupMinerEditMode() {
         const minerId = miner?.id || (index !== null ? currentMiners.length + index : currentMiners.length + 1);
         
         const powerKwValue = (typeof miner?.power_kw === 'number') ? miner.power_kw : (typeof miner?.power === 'number' ? miner.power / 1000 : '');
-        const minFullValue = (typeof miner?.minBatteryFullKwh === 'number') ? miner.minBatteryFullKwh : (typeof miner?.minBatteryKwh === 'number' ? miner.minBatteryKwh : '');
-        const minReducedValue = (typeof miner?.minBatteryReducedKwh === 'number') ? miner.minBatteryReducedKwh : '';
-
+        const levels = (() => {
+            const resolved = resolveLevels(miner);
+            if (resolved.length) {
+                return resolved;
+            }
+            return createDefaultLevels(miner);
+        })();
+        
         rowDiv.innerHTML = `
             <div class="card-body p-3">
                 <div class="row g-3">
@@ -672,13 +763,14 @@ function setupMinerEditMode() {
                         <label class="form-label small">Stromaufnahme (kW)</label>
                         <input type="number" class="form-control form-control-sm" data-field="power_kw" value="${powerKwValue}" step="0.1" placeholder="3.5">
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label small">Min. Batterie 100% (kWh)</label>
-                        <input type="number" class="form-control form-control-sm" data-field="minBatteryFullKwh" value="${minFullValue}" step="0.1" placeholder="20" min="0" max="100">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label small">Min. Batterie 60% (kWh)</label>
-                        <input type="number" class="form-control form-control-sm" data-field="minBatteryReducedKwh" value="${minReducedValue}" step="0.1" placeholder="10" min="0" max="100">
+                    <div class="col-12">
+                        <label class="form-label small">Leistungsstufen</label>
+                        <div class="miner-level-list" data-field="levels">
+                            ${levels.map((level, levelIndex) => renderLevelRow(level, levelIndex)).join('')}
+                            <div class="d-flex justify-content-start mt-2">
+                                <button type="button" class="btn btn-outline-primary btn-sm" data-level-add="true">Level hinzufügen</button>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label small">IP-Adresse</label>
@@ -704,11 +796,131 @@ function setupMinerEditMode() {
                 rowDiv.remove();
             });
         }
+
+        const addLevelBtn = rowDiv.querySelector('[data-level-add]');
+        if (addLevelBtn) {
+            addLevelBtn.addEventListener('click', function() {
+                const list = rowDiv.querySelector('.miner-level-list');
+                const levelCount = list.querySelectorAll('[data-level-row]').length;
+                list.insertAdjacentHTML('beforeend', renderLevelRow(createLevelTemplate(levelCount + 1), levelCount));
+                attachLevelHandlers(list);
+            });
+        }
+
+        const levelList = rowDiv.querySelector('.miner-level-list');
+        attachLevelHandlers(levelList);
     }
-    
-    function addNewMinerRow() {
-        const newMiner = { id: '', model: '', hashrate: '', power_kw: '', minBatteryFullKwh: 20.0, minBatteryReducedKwh: 10.0, ip: '' };
-        addEditRow(newMiner);
+
+    function attachLevelHandlers(container) {
+        if (!container) return;
+        container.querySelectorAll('[data-level-remove]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const row = this.closest('[data-level-row]');
+                if (row) row.remove();
+            });
+        });
+        container.querySelectorAll('[data-level-field]').forEach(input => {
+            input.addEventListener('input', function() {
+                const row = this.closest('[data-level-row]');
+                if (!row) return;
+                const summaryEl = row.querySelector('[data-level-summary]');
+                if (!summaryEl) return;
+                const tempLevel = {};
+                row.querySelectorAll('[data-level-field]').forEach(fieldEl => {
+                    const key = fieldEl.getAttribute('data-level-field');
+                    if (key === 'label') {
+                        tempLevel[key] = fieldEl.value.trim();
+                    } else {
+                        tempLevel[key] = toNumberOrNull(fieldEl.value.trim());
+                    }
+                });
+                summaryEl.textContent = getLevelSummary(tempLevel);
+            });
+        });
+    }
+
+    function renderLevelRow(level, levelIndex) {
+        const label = level.label || `Level ${levelIndex + 1}`;
+        const power = level.power_kw ?? '';
+        const battery = level.battery_min_kwh ?? '';
+        const pvHours = level.pv_forecast_hours ?? '';
+        const pvEnergy = level.pv_forecast_min_kwh ?? '';
+        return `
+            <div class="border rounded p-2 mb-2" data-level-row="true">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-2">
+                        <label class="form-label small">Label</label>
+                        <input type="text" class="form-control form-control-sm" data-level-field="label" value="${label}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">Leistung (kW)</label>
+                        <input type="number" step="0.1" min="0" class="form-control form-control-sm" data-level-field="power_kw" value="${power}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">Min. Batterie (kWh)</label>
+                        <input type="number" step="0.1" min="0" class="form-control form-control-sm" data-level-field="battery_min_kwh" value="${battery}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small">PV Prognose (kWh)</label>
+                        <input type="number" step="0.1" min="0" class="form-control form-control-sm" data-level-field="pv_forecast_min_kwh" value="${pvEnergy}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">PV Zeithorizont (h)</label>
+                        <input type="number" step="1" min="0" class="form-control form-control-sm" data-level-field="pv_forecast_hours" value="${pvHours}">
+                    </div>
+                    <div class="col-md-1 text-end">
+                        <button type="button" class="btn btn-outline-danger btn-sm" data-level-remove="true">X</button>
+                    </div>
+                </div>
+                <div class="row g-2 mt-2">
+                    <div class="col">
+                        <small class="text-muted" data-level-summary>${getLevelSummary(level)}</small>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function createLevelTemplate(order) {
+        return {
+            label: `Level ${order}`,
+            power_kw: '',
+            battery_min_kwh: '',
+            pv_forecast_hours: 0,
+            pv_forecast_min_kwh: 0
+        };
+    }
+
+    function createDefaultLevels(miner) {
+        const resolved = resolveLevels(miner);
+        if (resolved.length) {
+            return resolved;
+        }
+        const full = typeof miner?.minBatteryFullKwh === 'number' ? miner.minBatteryFullKwh : 0;
+        const reduced = typeof miner?.minBatteryReducedKwh === 'number' ? miner.minBatteryReducedKwh : 0;
+        const power = typeof miner?.power_kw === 'number' ? miner.power_kw : 0;
+        const reducedPower = power ? Math.round(power * 0.6 * 10) / 10 : '';
+        const levels = [];
+        if (reduced > 0) {
+            levels.push({
+                label: 'Reduced',
+                power_kw: reducedPower,
+                battery_min_kwh: reduced,
+                pv_forecast_hours: 0,
+                pv_forecast_min_kwh: 0
+            });
+        }
+        if (full > 0 || power > 0) {
+            levels.push({
+                label: 'Full',
+                power_kw: power,
+                battery_min_kwh: full,
+                pv_forecast_hours: 0,
+                pv_forecast_min_kwh: 0
+            });
+        }
+        const defaultLevels = levels.length ? levels : [createLevelTemplate(1)];
+        return normalizeLevelList(defaultLevels);
     }
     
     function saveMiners() {
@@ -723,21 +935,28 @@ function setupMinerEditMode() {
         console.log('Found rows to process:', rows.length);
         
         rows.forEach((row, index) => {
-                    const inputs = row.querySelectorAll('input[data-field]');
+                    const inputs = row.querySelectorAll('input[data-field], .miner-level-list');
             const miner = {};
             
             console.log(`Processing row ${index}:`, inputs.length, 'inputs found');
             
             inputs.forEach(input => {
                 const field = input.getAttribute('data-field');
-                const value = input.value.trim();
+                if (!field) {
+                    return;
+                }
+                if (field === 'levels') {
+                    miner[field] = collectLevelsFromRow(input);
+                    return;
+                }
+                const rawValue = typeof input.value === 'string' ? input.value : '';
+                const value = rawValue.trim();
                 
                 console.log(`${field}: "${value}"`);
                 
-                if (field === 'hashrate' || field === 'power_kw' || field === 'minBatteryFullKwh' || field === 'minBatteryReducedKwh') {
+                if (field === 'hashrate' || field === 'power_kw') {
                     miner[field] = value && !isNaN(value) ? parseFloat(value) : 0;
                 } else if (field === 'id') {
-                    // ID is now text field, just store as string
                     miner[field] = value || `miner-${index + 1}`;
                 } else {
                     miner[field] = value;
@@ -746,6 +965,10 @@ function setupMinerEditMode() {
             
             // Only add valid miners (at least model filled)
             if (miner.model && miner.model.trim() !== '') {
+                if (!miner.levels || !miner.levels.length) {
+                    miner.levels = createDefaultLevels(miner);
+                }
+                miner.levels = normalizeLevels(miner.levels);
                 if (!miner.id || miner.id.trim() === '') {
                     miner.id = `miner-${miners.length + 1}`;
                 }
@@ -781,17 +1004,16 @@ function setupMinerEditMode() {
         const validMiners = [];
         miners.forEach((miner, index) => {
             if (miner && typeof miner === 'object') {
+                const normalizedLevels = normalizeLevels(miner.levels || []);
                 const validMiner = {
                     id: miner.id || `miner-${index + 1}`,
                     model: miner.model || '',
                     hashrate: typeof miner.hashrate === 'number' ? miner.hashrate : 0,
-                    power_kw: typeof miner.power_kw === 'number' ? miner.power_kw : (typeof miner.power === 'number' ? miner.power / 1000 : 0),
-                    minBatteryFullKwh: typeof miner.minBatteryFullKwh === 'number' ? miner.minBatteryFullKwh : (typeof miner.minBatteryKwh === 'number' ? miner.minBatteryKwh : 0),
-                    minBatteryReducedKwh: typeof miner.minBatteryReducedKwh === 'number' ? miner.minBatteryReducedKwh : 0,
-                    ip: miner.ip || ''
+                    power_kw: typeof miner.power_kw === 'number' ? miner.power_kw : 0,
+                    ip: miner.ip || '',
+                    levels: normalizedLevels.length ? normalizedLevels : createDefaultLevels(miner)
                 };
-                
-                // Only include miners with model
+
                 if (validMiner.model && validMiner.model.trim() !== '') {
                     validMiners.push(validMiner);
                 }
@@ -802,8 +1024,8 @@ function setupMinerEditMode() {
         
         // Sort miners by efficiency (hashrate per power - best first)
         const sortedMiners = validMiners.sort((a, b) => {
-            const efficiencyA = a.power > 0 ? a.hashrate / a.power : 0;
-            const efficiencyB = b.power > 0 ? b.hashrate / b.power : 0;
+            const efficiencyA = a.power_kw > 0 ? a.hashrate / a.power_kw : 0;
+            const efficiencyB = b.power_kw > 0 ? b.hashrate / b.power_kw : 0;
             return efficiencyB - efficiencyA; // Descending order (best first)
         });
         
@@ -849,6 +1071,25 @@ function setupMinerEditMode() {
             console.error('Error saving miner settings:', error);
             alert('Fehler beim Speichern: ' + error.message);
         });
+    }
+
+    function collectLevelsFromRow(listEl) {
+        if (!listEl) return [];
+        const rows = listEl.querySelectorAll('[data-level-row]');
+        const levels = [];
+        rows.forEach((rowEl, idx) => {
+            const level = {};
+            rowEl.querySelectorAll('[data-level-field]').forEach(fieldEl => {
+                const key = fieldEl.getAttribute('data-level-field');
+                if (key === 'label') {
+                    level[key] = fieldEl.value.trim();
+                } else {
+                    level[key] = toNumberOrNull(fieldEl.value.trim());
+                }
+            });
+            levels.push(level);
+        });
+        return normalizeLevels(levels);
     }
 }
 
