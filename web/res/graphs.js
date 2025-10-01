@@ -570,6 +570,30 @@ function drawHourlyForecastChart(forecast, batteryStatus, miners) {
         .domain([0, maxValue]).nice()
         .range([innerHeight, 0]);
 
+    // Create second Y axis for hashrate (TH/s) - for bar scaling only, not displayed
+    var maxHashrate = d3.max(forecast.forecast, function(d) { return d.total_hashrate_th || 0; }) || 1;
+    var yHashrate = d3.scaleLinear()
+        .domain([0, maxHashrate]).nice()
+        .range([innerHeight, 0]);
+    
+    // Generate unique miner IDs and assign colors
+    var allMinerIds = [];
+    forecast.forecast.forEach(function(d) {
+        if (d.running_miners) {
+            d.running_miners.forEach(function(m) {
+                if (allMinerIds.indexOf(m.miner_id) === -1) {
+                    allMinerIds.push(m.miner_id);
+                }
+            });
+        }
+    });
+    allMinerIds.sort();
+    
+    // Color scale for miners
+    var colorScale = d3.scaleOrdinal()
+        .domain(allMinerIds)
+        .range(['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22', '#34495e']);
+
     // Axis with ticks at 0:00 and 12:00
     var tickTimes = timestamps.filter(function(ts) {
         var hour = ts.getHours();
@@ -667,6 +691,38 @@ function drawHourlyForecastChart(forecast, batteryStatus, miners) {
         .style('pointer-events', 'none')
         .style('z-index', '1000');
 
+    // Draw stacked miner bars
+    var barWidth = Math.max(2, (innerWidth / timestamps.length) * 0.8);
+    
+    forecast.forecast.forEach(function(d, idx) {
+        if (!d.running_miners || d.running_miners.length === 0) return;
+        
+        var xPos = x(timestamps[idx]) - barWidth / 2;
+        var yOffset = innerHeight;
+        
+        // Calculate total hashrate for this hour to scale bars
+        var totalHashrate = d.total_hashrate_th || 0;
+        if (totalHashrate === 0) return;
+        
+        // Draw each miner's contribution as a stacked bar segment
+        d.running_miners.forEach(function(miner) {
+            var minerHashrate = miner.hashrate_th || 0;
+            var barHeight = (minerHashrate / totalHashrate) * (innerHeight - yHashrate(totalHashrate));
+            
+            g.append('rect')
+                .attr('x', xPos)
+                .attr('y', yOffset - barHeight)
+                .attr('width', barWidth)
+                .attr('height', barHeight)
+                .attr('fill', colorScale(miner.miner_id))
+                .attr('opacity', 0.7)
+                .style('pointer-events', 'none');
+            
+            yOffset -= barHeight;
+        });
+    });
+
+    // Draw battery level line
     var line = d3.line()
         .x(function(d, idx) { return x(timestamps[idx]); })
         .y(function(d) { return y(d.battery_level_kwh); })
@@ -680,25 +736,25 @@ function drawHourlyForecastChart(forecast, batteryStatus, miners) {
         .attr('stroke-width', 2)
         .attr('d', line);
 
-    // Add invisible circles for hover interaction
-    g.selectAll('.forecast-dot')
+    // Add invisible rectangles for easier hover interaction across full width of each time slot
+    var slotWidth = timestamps.length > 1 ? x(timestamps[1]) - x(timestamps[0]) : 10;
+    
+    g.selectAll('.forecast-hover-area')
         .data(forecast.forecast)
         .enter()
-        .append('circle')
-        .attr('class', 'forecast-dot')
-        .attr('cx', function(d, idx) { return x(timestamps[idx]); })
-        .attr('cy', function(d) { return y(d.battery_level_kwh); })
-        .attr('r', 6)
+        .append('rect')
+        .attr('class', 'forecast-hover-area')
+        .attr('x', function(d, idx) { return x(timestamps[idx]) - slotWidth / 2; })
+        .attr('y', 0)
+        .attr('width', slotWidth)
+        .attr('height', innerHeight)
         .attr('fill', 'transparent')
-        .attr('stroke', 'transparent')
         .style('cursor', 'pointer')
         .on('mouseover', function(event, d) {
             var dateStr = d3.timeFormat('%d.%m.%Y %H:%M')(new Date(d.datetime));
             
             d3.select(this)
-                .attr('fill', '#0d6efd')
-                .attr('stroke', 'white')
-                .attr('stroke-width', 2);
+                .attr('fill', 'rgba(13, 110, 253, 0.1)');
             
             tooltip.transition()
                 .duration(200)
@@ -765,8 +821,7 @@ function drawHourlyForecastChart(forecast, batteryStatus, miners) {
         })
         .on('mouseout', function() {
             d3.select(this)
-                .attr('fill', 'transparent')
-                .attr('stroke', 'transparent');
+                .attr('fill', 'transparent');
             
             tooltip.transition()
                 .duration(500)
@@ -798,6 +853,29 @@ function drawHourlyForecastChart(forecast, batteryStatus, miners) {
             .style('font-size', '11px')
             .style('fill', '#495057')
             .text(item.label);
+    });
+
+    // Add miner legend entries with colored boxes
+    allMinerIds.forEach(function(minerId, idx) {
+        var minerInfo = minerMap[minerId];
+        var minerLabel = minerInfo ? (minerInfo.model + ' #' + minerInfo.id) : ('Miner ' + minerId);
+        var itemGroup = legend.append('g').attr('transform', 'translate(150,' + (idx * 18) + ')');
+        
+        itemGroup.append('rect')
+            .attr('x', 0)
+            .attr('y', -10)
+            .attr('width', 12)
+            .attr('height', 12)
+            .attr('fill', colorScale(minerId))
+            .attr('opacity', 0.7);
+        
+        itemGroup.append('text')
+            .attr('x', 18)
+            .attr('y', -4)
+            .attr('alignment-baseline', 'middle')
+            .style('font-size', '11px')
+            .style('fill', '#495057')
+            .text(minerLabel);
     });
 
     var todayLine = new Date();
