@@ -187,8 +187,8 @@ function fetchAndRenderMiners() {
             if (data && data.weather_hourly) {
                 renderHourlyWeather(data.weather_hourly);
             }
-            if (data && data.hourly_forecast) {
-                drawHourlyForecastChart(data.hourly_forecast);
+            if (data && data.hourly_forecast && data.pv) {
+                drawHourlyForecastChart(data.hourly_forecast, data.pv.batterie_stand);
             }
             // Last update timestamps: show relative age (< 7d) or date; color if >24h (warning) or >48h (danger)
             if (data && data.mtimes) {

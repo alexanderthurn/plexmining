@@ -516,9 +516,9 @@ function drawSolarPanel(powerPercent) {
     }
 }
 
-function drawHourlyForecastChart(forecast) {
+function drawHourlyForecastChart(forecast, batteryStatus) {
     var container = document.getElementById('hourly-forecast-chart');
-    if (!container || !forecast || !Array.isArray(forecast.pv_energy_kwh) || forecast.pv_energy_kwh.length === 0) {
+    if (!container || !forecast || !Array.isArray(forecast.forecast) || forecast.forecast.length === 0) {
         if (container) container.innerHTML = '<div class="text-muted">Keine Prognosedaten verfügbar.</div>';
         return;
     }
@@ -538,21 +538,18 @@ function drawHourlyForecastChart(forecast) {
 
     var g = svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-    var start = new Date(forecast.start_datetime);
-    start.setMinutes(0, 0, 0);
-
-    var timestamps = forecast.pv_energy_kwh.map(function(_, idx) {
-        var ts = new Date(start.getTime() + idx * 60 * 60 * 1000);
-        return ts;
+    var timestamps = forecast.forecast.map(function(d) {
+        return new Date(d.datetime);
     });
 
     var x = d3.scaleTime()
         .domain([timestamps[0], timestamps[timestamps.length - 1]])
         .range([0, innerWidth]);
 
+    var batteryCapacity = (batteryStatus && batteryStatus.capacity_kwh) ? Number(batteryStatus.capacity_kwh) : 0;
     var maxValue = d3.max([
-        d3.max(forecast.battery_levels_kwh) || 0,
-        forecast.battery_capacity_kwh || 0
+        d3.max(forecast.forecast, function(d) { return d.battery_level_kwh; }) || 0,
+        batteryCapacity
     ]);
 
     var y = d3.scaleLinear()
@@ -597,18 +594,114 @@ function drawHourlyForecastChart(forecast) {
         .style('font-size', '12px')
         .text('Speicher (kWh)');
 
+    // Create tooltip
+    var tooltip = d3.select('body').append('div')
+        .attr('class', 'tooltip')
+        .style('opacity', 0)
+        .style('position', 'absolute')
+        .style('background', 'rgba(0, 0, 0, 0.8)')
+        .style('color', 'white')
+        .style('padding', '10px')
+        .style('border-radius', '5px')
+        .style('font-size', '12px')
+        .style('pointer-events', 'none')
+        .style('z-index', '1000');
+
     var line = d3.line()
-        .x(function(_, idx) { return x(timestamps[idx]); })
-        .y(function(value) { return y(value); })
+        .x(function(d, idx) { return x(timestamps[idx]); })
+        .y(function(d) { return y(d.battery_level_kwh); })
         .curve(d3.curveMonotoneX);
 
     g.append('path')
-        .datum(forecast.battery_levels_kwh)
+        .datum(forecast.forecast)
         .attr('class', 'forecast-cumulative-line')
         .attr('fill', 'none')
         .attr('stroke', '#0d6efd')
         .attr('stroke-width', 2)
         .attr('d', line);
+
+    // Add invisible circles for hover interaction
+    g.selectAll('.forecast-dot')
+        .data(forecast.forecast)
+        .enter()
+        .append('circle')
+        .attr('class', 'forecast-dot')
+        .attr('cx', function(d, idx) { return x(timestamps[idx]); })
+        .attr('cy', function(d) { return y(d.battery_level_kwh); })
+        .attr('r', 6)
+        .attr('fill', 'transparent')
+        .attr('stroke', 'transparent')
+        .style('cursor', 'pointer')
+        .on('mouseover', function(event, d) {
+            var dateStr = d3.timeFormat('%d.%m.%Y %H:%M')(new Date(d.datetime));
+            
+            d3.select(this)
+                .attr('fill', '#0d6efd')
+                .attr('stroke', 'white')
+                .attr('stroke-width', 2);
+            
+            tooltip.transition()
+                .duration(200)
+                .style('opacity', .9);
+            
+            // Build tooltip HTML
+            var tooltipHtml = '<strong>' + dateStr + '</strong><br/>' +
+                'Speicher: <strong>' + d.battery_level_kwh.toFixed(2) + ' kWh</strong><br/>';
+            
+            // Add PV forecast horizons
+            if (d.pv_forecast_horizons && Object.keys(d.pv_forecast_horizons).length > 0) {
+                tooltipHtml += '<br/><strong>PV-Prognose:</strong><br/>';
+                var horizonKeys = Object.keys(d.pv_forecast_horizons).sort(function(a, b) { return parseInt(a) - parseInt(b); });
+                horizonKeys.forEach(function(hours) {
+                    var pvValue = d.pv_forecast_horizons[hours];
+                    tooltipHtml += '• ' + hours + 'h: ' + pvValue.toFixed(2) + ' kWh<br/>';
+                });
+            }
+            
+            // Add running miners info
+            if (d.running_miners && d.running_miners.length > 0) {
+                tooltipHtml += '<br/><strong>Aktive Miner:</strong><br/>';
+                d.running_miners.forEach(function(miner) {
+                    var minerLabel = 'Miner ' + miner.miner_id;
+                    var levelLabel = 'Level ' + miner.level_index;
+                    var powerLabel = miner.power_kw.toFixed(2) + ' kW';
+                    var hashrateLabel = miner.hashrate_th ? miner.hashrate_th.toFixed(1) + ' TH/s' : '';
+                    tooltipHtml += '• ' + minerLabel + ' - ' + levelLabel + ' (' + powerLabel;
+                    if (hashrateLabel) {
+                        tooltipHtml += ', ' + hashrateLabel;
+                    }
+                    tooltipHtml += ')<br/>';
+                });
+                
+                // Add totals
+                if (d.total_power_kw !== undefined || d.total_hashrate_th !== undefined) {
+                    tooltipHtml += '<br/><strong>Gesamt:</strong> ';
+                    if (d.total_power_kw !== undefined) {
+                        tooltipHtml += d.total_power_kw.toFixed(2) + ' kW';
+                    }
+                    if (d.total_hashrate_th !== undefined) {
+                        if (d.total_power_kw !== undefined) tooltipHtml += ', ';
+                        tooltipHtml += d.total_hashrate_th.toFixed(1) + ' TH/s';
+                    }
+                    tooltipHtml += '<br/>';
+                }
+            } else {
+                tooltipHtml += '<br/><em style="color: #999;">Keine Miner aktiv</em>';
+            }
+            
+            tooltip.html(tooltipHtml)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY - 28) + 'px');
+        })
+        .on('mouseout', function() {
+            d3.select(this)
+                .attr('fill', 'transparent')
+                .attr('stroke', 'transparent');
+            
+            tooltip.transition()
+                .duration(500)
+                .style('opacity', 0);
+        });
 
     var legend = svg.append('g')
         .attr('class', 'forecast-legend')
