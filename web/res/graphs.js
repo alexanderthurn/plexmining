@@ -217,15 +217,6 @@ function drawWeatherChart(rows) {
         .style('opacity', 0.7)
         .style('pointer-events', 'none');
 
-    g.append('text')
-        .attr('class', 'today-label')
-        .attr('x', todayX + 5)
-        .attr('y', 15)
-        .style('font-size', '10px')
-        .style('font-weight', 'bold')
-        .style('fill', '#0d6efd')
-        .style('pointer-events', 'none')
-        .text('Heute');
 }
 
 function drawHourlyWeatherChart(hourlyData) {
@@ -415,13 +406,6 @@ function drawHourlyWeatherChart(hourlyData) {
             .attr('y1', 0)
             .attr('y2', innerHeight)
             .style('pointer-events', 'none');
-
-        g.append('text')
-            .attr('class', 'today-label')
-            .attr('x', todayX + 5)
-            .attr('y', 15)
-            .style('pointer-events', 'none')
-            .text('Jetzt');
     }
 }
 
@@ -530,5 +514,141 @@ function drawSolarPanel(powerPercent) {
 
             cellIndex++;
         }
+    }
+}
+
+function drawHourlyForecastChart(forecast) {
+    var container = document.getElementById('hourly-forecast-chart');
+    if (!container || !forecast || !Array.isArray(forecast.pv_energy_kwh) || forecast.pv_energy_kwh.length === 0) {
+        if (container) container.innerHTML = '<div class="text-muted">Keine Prognosedaten verfügbar.</div>';
+        return;
+    }
+
+    container.innerHTML = '';
+
+    var width = container.clientWidth || container.offsetWidth || 800;
+    var height = 350;
+    var margin = { top: 20, right: 40, bottom: 50, left: 70 };
+    var innerWidth = width - margin.left - margin.right;
+    var innerHeight = height - margin.top - margin.bottom;
+
+    var svg = d3.select(container)
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+    var g = svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+    var start = new Date(forecast.start_datetime);
+    start.setMinutes(0, 0, 0);
+
+    var timestamps = forecast.pv_energy_kwh.map(function(_, idx) {
+        var ts = new Date(start.getTime() + idx * 60 * 60 * 1000);
+        return ts;
+    });
+
+    var x = d3.scaleTime()
+        .domain([timestamps[0], timestamps[timestamps.length - 1]])
+        .range([0, innerWidth]);
+
+    var maxValue = d3.max([
+        d3.max(forecast.battery_levels_kwh) || 0,
+        forecast.battery_capacity_kwh || 0
+    ]);
+
+    var y = d3.scaleLinear()
+        .domain([0, maxValue]).nice()
+        .range([innerHeight, 0]);
+
+    // Axis with daily ticks (0:00)
+    var dayTicks = timestamps.filter(function(ts) {
+        return ts.getHours() === 0;
+    });
+    if (dayTicks.length === 0) {
+        dayTicks = d3.timeDay.range(timestamps[0], timestamps[timestamps.length - 1]);
+        if (dayTicks.indexOf(timestamps[0]) === -1) dayTicks.unshift(timestamps[0]);
+        if (dayTicks.indexOf(timestamps[timestamps.length - 1]) === -1) dayTicks.push(timestamps[timestamps.length - 1]);
+    }
+
+    g.append('g')
+        .attr('transform', 'translate(0,' + innerHeight + ')')
+        .call(d3.axisBottom(x)
+            .tickValues(dayTicks)
+            .tickFormat(d3.timeFormat('%d.%m.')))
+        .selectAll('text')
+        .style('text-anchor', 'middle');
+
+    g.append('g')
+        .call(d3.axisLeft(y).ticks(6));
+
+    g.append('text')
+        .attr('x', innerWidth / 2)
+        .attr('y', innerHeight + 40)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#6c757d')
+        .style('font-size', '12px')
+        .text('Datum');
+
+    g.append('text')
+        .attr('transform', 'rotate(-90)')
+        .attr('x', -innerHeight / 2)
+        .attr('y', -45)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#6c757d')
+        .style('font-size', '12px')
+        .text('PV-Ertrag (kWh)');
+
+    var line = d3.line()
+        .x(function(_, idx) { return x(timestamps[idx]); })
+        .y(function(value) { return y(value); })
+        .curve(d3.curveMonotoneX);
+
+    g.append('path')
+        .datum(forecast.battery_levels_kwh)
+        .attr('class', 'forecast-cumulative-line')
+        .attr('fill', 'none')
+        .attr('stroke', '#0d6efd')
+        .attr('stroke-width', 2)
+        .attr('d', line);
+
+    var legend = svg.append('g')
+        .attr('class', 'forecast-legend')
+        .attr('transform', 'translate(' + (margin.left) + ',' + (margin.top) + ')');
+
+    var items = [
+        { label: 'Speicher (kWh)', color: '#0d6efd', type: 'line' }
+    ];
+
+    items.forEach(function(item, idx) {
+        var itemGroup = legend.append('g').attr('transform', 'translate(0,' + (idx * 18) + ')');
+        itemGroup.append('line')
+            .attr('x1', 0)
+            .attr('x2', 12)
+            .attr('y1', -4)
+            .attr('y2', -4)
+            .attr('stroke', item.color)
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', item.type === 'line-dashed' ? '6,3' : '');
+        itemGroup.append('text')
+            .attr('x', 18)
+            .attr('y', -4)
+            .attr('alignment-baseline', 'middle')
+            .style('font-size', '11px')
+            .style('fill', '#495057')
+            .text(item.label);
+    });
+
+    var todayLine = new Date();
+    todayLine.setMinutes(0, 0, 0);
+    if (todayLine >= timestamps[0] && todayLine <= timestamps[timestamps.length - 1]) {
+        var todayX = x(todayLine);
+        g.append('line')
+            .attr('class', 'today-line')
+            .attr('x1', todayX)
+            .attr('x2', todayX)
+            .attr('y1', 0)
+            .attr('y2', innerHeight)
+            .style('pointer-events', 'none');
+
     }
 }

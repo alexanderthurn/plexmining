@@ -99,6 +99,11 @@ Example snippet inside `web/data/config/settings.json`:
 
 The settings editor (`web/settings.html`) validates JSON and the backend normalizes values (sorting by battery requirement, ensuring numeric types). Legacy `minBatteryFullKwh` / `minBatteryReducedKwh` fields are still accepted and converted into two default levels.
 
+## PV Forecast Controls
+
+- In the Steuerung card you can set a `Haus-Grundlast (kWh/h)` that is stored in `settings.json` (`houseBaseLoad`). It is subtracted when we calculate net PV forecast.
+- The dashboard now renders a full-width chart combining hourly PV generation (`hourly_forecast.pv_energy_kwh`) and the cumulative net energy after deducting the base load.
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

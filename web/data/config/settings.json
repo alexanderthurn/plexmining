@@ -3,7 +3,7 @@
     "pv_kwp": 120,
     "pvSystemFactor": 0.8,
     "autoMode": true,
-    "systemScale": 23,
+    "pvPowerScale": 0.1,
     "miners": [
         {
             "id": "1",
@@ -12,13 +12,6 @@
             "power_kw": 3.5,
             "ip": "192.168.1.101",
             "levels": [
-                {
-                    "label": "Next Day",
-                    "power_kw": 2,
-                    "battery_min_kwh": 5,
-                    "pv_forecast_hours": 2,
-                    "pv_forecast_min_kwh": 20
-                },
                 {
                     "label": "Reduced",
                     "power_kw": 2.1,
@@ -196,5 +189,6 @@
                 }
             ]
         }
-    ]
+    ],
+    "houseBaseLoad": 2
 }

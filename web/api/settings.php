@@ -112,6 +112,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    if (isset($input['houseBaseLoad']) && !is_numeric($input['houseBaseLoad'])) {
+        $input['houseBaseLoad'] = 0;
+    }
+
     if (isset($input['miners']) && is_array($input['miners'])) {
         $normalizedMiners = [];
         foreach ($input['miners'] as $miner) {

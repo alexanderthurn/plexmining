@@ -187,6 +187,9 @@ function fetchAndRenderMiners() {
             if (data && data.weather_hourly) {
                 renderHourlyWeather(data.weather_hourly);
             }
+            if (data && data.hourly_forecast) {
+                drawHourlyForecastChart(data.hourly_forecast);
+            }
             // Last update timestamps: show relative age (< 7d) or date; color if >24h (warning) or >48h (danger)
             if (data && data.mtimes) {
                 setRelativeTimestamp('ts-pv', data.mtimes.pv);
@@ -483,25 +486,31 @@ function saveAutoModeSettings(autoMode) {
 function loadAndApplyAutoMode() {
     const autoModeToggle = document.getElementById('auto-mode-toggle');
     const autoModeSettings = document.getElementById('auto-mode-settings');
+    const controlAdvanced = document.getElementById('control-advanced');
     
     if (!autoModeToggle || !autoModeSettings) return;
     
     if (window.__plexSettings && typeof window.__plexSettings.autoMode === 'boolean') {
         autoModeToggle.checked = window.__plexSettings.autoMode;
-        autoModeSettings.style.display = window.__plexSettings.autoMode ? 'block' : 'none';
+        setAutoModeSettingsVisibility();
     }
 }
 
 function loadAndApplySystemScale() {
     const systemScale = document.getElementById('system-scale');
     const systemScaleInput = document.getElementById('system-scale-input');
+    const houseBaseLoadInput = document.getElementById('house-base-load');
     
     if (!systemScale || !systemScaleInput) return;
     
-    if (window.__plexSettings && typeof window.__plexSettings.systemScale === 'number') {
-        const scaleValue = Math.max(0, Math.min(100, window.__plexSettings.systemScale));
-        systemScale.value = scaleValue;
-        systemScaleInput.value = scaleValue;
+    if (window.__plexSettings && typeof window.__plexSettings.pvPowerScale === 'number') {
+        const scalePercent = Math.max(0, Math.min(200, window.__plexSettings.pvPowerScale * 100));
+        systemScale.value = scalePercent;
+        systemScaleInput.value = scalePercent;
+    }
+
+    if (houseBaseLoadInput && window.__plexSettings && typeof window.__plexSettings.houseBaseLoad === 'number') {
+        houseBaseLoadInput.value = window.__plexSettings.houseBaseLoad;
     }
 }
 
@@ -509,11 +518,12 @@ function loadAndApplySystemScale() {
 function setupAutoModeToggle() {
     const autoModeToggle = document.getElementById('auto-mode-toggle');
     const autoModeSettings = document.getElementById('auto-mode-settings');
+    const controlAdvanced = document.getElementById('control-advanced');
     
     if (autoModeToggle && autoModeSettings) {
         autoModeToggle.addEventListener('change', function() {
             const isAutoMode = this.checked;
-            autoModeSettings.style.display = isAutoMode ? 'block' : 'none';
+            setAutoModeSettingsVisibility();
             
             // Persist to backend
             saveAutoModeSettings(isAutoMode);
@@ -521,12 +531,26 @@ function setupAutoModeToggle() {
     }
 }
 
-function saveSystemScaleSettings(systemScale) {
+function setAutoModeSettingsVisibility() {
+    const autoModeToggle = document.getElementById('auto-mode-toggle');
+    const autoModeSettings = document.getElementById('auto-mode-settings');
+    const controlAdvanced = document.getElementById('control-advanced');
+
+    if (!autoModeToggle || !autoModeSettings) return;
+
+    if (controlAdvanced && controlAdvanced.style.display !== 'none' && autoModeToggle.checked) {
+        autoModeSettings.style.display = 'block';
+    } else {
+        autoModeSettings.style.display = 'none';
+    }
+}
+
+function savePvPowerScaleSettings(scalePercent) {
     // Get current settings
     const currentSettings = window.__plexSettings || {};
+    const scaleFactor = Math.max(0, scalePercent) / 100;
     
-    // Merge with new systemScale
-    const updatedSettings = Object.assign({}, currentSettings, { systemScale: systemScale });
+    const updatedSettings = Object.assign({}, currentSettings, { pvPowerScale: scaleFactor });
     
     fetch('../api/settings.php', {
         method: 'POST',
@@ -537,11 +561,7 @@ function saveSystemScaleSettings(systemScale) {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('System scale setting saved:', data);
-        // Update local store
-        window.__plexSettings.systemScale = systemScale;
-        
-        // Reload data to refresh calculations that might depend on system scale
+        window.__plexSettings.pvPowerScale = scaleFactor;
         fetchAndRenderMiners();
     })
     .catch(error => {
@@ -552,20 +572,78 @@ function saveSystemScaleSettings(systemScale) {
 function setupSystemScaleHandlers() {
     const systemScale = document.getElementById('system-scale');
     const systemScaleInput = document.getElementById('system-scale-input');
+    const houseBaseLoadInput = document.getElementById('house-base-load');
+    const controlEditToggle = document.getElementById('control-edit-toggle');
+    const controlAdvanced = document.getElementById('control-advanced');
+    const controlSectionCol = document.getElementById('control-section-col');
     
     if (systemScale && systemScaleInput) {
         systemScale.addEventListener('input', function() {
             systemScaleInput.value = this.value;
-            // Persist to backend
-            saveSystemScaleSettings(parseInt(this.value, 10));
+            savePvPowerScaleSettings(parseInt(this.value, 10));
         });
         
         systemScaleInput.addEventListener('input', function() {
             systemScale.value = this.value;
-            // Persist to backend
-            saveSystemScaleSettings(parseInt(this.value, 10));
+            savePvPowerScaleSettings(parseInt(this.value, 10));
         });
     }
+
+    if (houseBaseLoadInput) {
+        houseBaseLoadInput.addEventListener('change', function() {
+            const value = parseFloat(this.value);
+            saveHouseBaseLoadSettings(isNaN(value) ? 0 : value);
+        });
+    }
+
+    if (controlEditToggle && controlAdvanced) {
+        let isEditMode = false;
+        const originalClass = controlSectionCol ? controlSectionCol.getAttribute('data-original-class') : null;
+
+        controlEditToggle.addEventListener('click', function() {
+            isEditMode = !isEditMode;
+            if (isEditMode) {
+                controlAdvanced.style.display = 'block';
+                controlEditToggle.innerHTML = '<i class="bi bi-x me-1"></i>Schließen';
+                controlEditToggle.classList.remove('btn-outline-secondary');
+                controlEditToggle.classList.add('btn-secondary');
+                if (controlSectionCol) {
+                    controlSectionCol.className = 'col-12 mb-3';
+                }
+                setAutoModeSettingsVisibility();
+            } else {
+                controlAdvanced.style.display = 'none';
+                controlEditToggle.innerHTML = '<i class="bi bi-pencil me-1"></i>Bearbeiten';
+                controlEditToggle.classList.add('btn-outline-secondary');
+                controlEditToggle.classList.remove('btn-secondary');
+                if (controlSectionCol && originalClass) {
+                    controlSectionCol.className = originalClass;
+                }
+                setAutoModeSettingsVisibility();
+            }
+        });
+    }
+}
+
+function saveHouseBaseLoadSettings(baseLoad) {
+    const currentSettings = window.__plexSettings || {};
+    const updatedSettings = Object.assign({}, currentSettings, { houseBaseLoad: baseLoad });
+
+    fetch('../api/settings.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedSettings)
+    })
+    .then(response => response.json())
+    .then(data => {
+        window.__plexSettings.houseBaseLoad = baseLoad;
+        fetchAndRenderMiners();
+    })
+    .catch(error => {
+        console.error('Error saving house base load settings:', error);
+    });
 }
 
 

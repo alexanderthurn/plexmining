@@ -1,3 +1,6 @@
+.card.same-height {
+    transition: all 0.2s ease-in-out;
+}
 img {
     max-width: 400px;
     height: auto;
@@ -109,6 +112,19 @@ body {
 #weather-chart {
     width: 100%;
     max-width: 100%;
+}
+
+.full-width-chart {
+    width: 100%;
+    min-height: 320px;
+}
+
+.btn-outline-secondary:focus {
+    box-shadow: none;
+}
+
+.forecast-legend text {
+    font-size: 11px;
 }
 
 .today-line {
