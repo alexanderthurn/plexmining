@@ -34,6 +34,11 @@
                                 <span class="input-group-text">%</span>
                             </div>
                         </div>
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-danger w-100" id="emergency-stop">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i>NOT-AUS
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -46,7 +51,6 @@
                             <div class="mt-2 text-muted small">
                                 <div>Kapazität: <span id="batterie-kapazitaet"></span> kWh</div>
                                 <div>Aktuell: <span id="batterie-current"></span> kWh</div>
-                                <div>Füllstand: <span id="batterie-percent"></span> %</div>
                             </div>
                         </div>
                     </div>
@@ -201,9 +205,6 @@
                                 <button type="button" class="btn btn-primary btn-sm me-2" id="miner-edit-mode-toggle">
                                     <i class="bi bi-pencil me-1"></i>Bearbeiten
                                 </button>
-                                <button type="button" class="btn btn-danger btn-sm me-3" id="emergency-stop">
-                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>NOT-AUS
-                                </button>
                                 <small class="text-muted" id="ts-miners"></small>
                             </div>
                         </div>
@@ -229,8 +230,9 @@
 
                         <!-- Edit mode -->
                         <div id="miner-edit-mode" style="display: none;">
-                            <div class="mb-3">
-                                <h6>Miner bearbeiten</h6>
+                            <div class="mb-3 d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Miner bearbeiten</h6>
+                                <button type="button" class="btn btn-primary btn-sm" id="save-miners-btn-top">Speichern</button>
                             </div>
                             <div id="miner-edit-table">
                                 <!-- Dynamic editing interface will be loaded here -->

@@ -612,6 +612,12 @@ function setupMinerEditMode() {
             saveMiners();
         });
     }
+    const saveBtnTop = document.getElementById('save-miners-btn-top');
+    if (saveBtnTop) {
+        saveBtnTop.addEventListener('click', function() {
+            saveMiners();
+        });
+    }
     
     if (addMinerBtn) {
         addMinerBtn.addEventListener('click', function() {
@@ -763,6 +769,10 @@ function setupMinerEditMode() {
                         <label class="form-label small">Stromaufnahme (kW)</label>
                         <input type="number" class="form-control form-control-sm" data-field="power_kw" value="${powerKwValue}" step="0.1" placeholder="3.5">
                     </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">IP-Adresse</label>
+                        <input type="text" class="form-control form-control-sm" data-field="ip" value="${miner?.ip || ''}" placeholder="192.168.1.101">
+                    </div>
                     <div class="col-12">
                         <label class="form-label small">Leistungsstufen</label>
                         <div class="miner-level-list" data-field="levels">
@@ -771,10 +781,6 @@ function setupMinerEditMode() {
                                 <button type="button" class="btn btn-outline-primary btn-sm" data-level-add="true">Level hinzufügen</button>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label small">IP-Adresse</label>
-                        <input type="text" class="form-control form-control-sm" data-field="ip" value="${miner?.ip || ''}" placeholder="192.168.1.101">
                     </div>
                 </div>
                 <div class="row g-3 mt-2">

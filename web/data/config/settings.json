@@ -3,7 +3,7 @@
     "pv_kwp": 120,
     "pvSystemFactor": 0.8,
     "autoMode": true,
-    "systemScale": 30,
+    "systemScale": 23,
     "miners": [
         {
             "id": "1",
