@@ -285,16 +285,15 @@ function drawHourlyWeatherChart(hourlyData) {
 
     // Axes
     var dataCount = data.length;
-    var tickFormat = dataCount > 24 ? d3.timeFormat('%d.%m. %H:%M') : d3.timeFormat('%H:%M');
-    var ticks = dataCount > 48 
-        ? data
-            .filter(function(d, i) { return i % Math.max(1, Math.floor(dataCount / 4)) === 0; })
-            .map(function(d){ return d.datetime; })
-        : (dataCount > 24 
-            ? data
-                .filter(function(d, i) { return i % Math.max(1, Math.floor(dataCount / 8)) === 0; })
-                .map(function(d){ return d.datetime; })
-            : data.map(function(d){ return d.datetime; }));
+    var tickFormat = d3.timeFormat('%H:%M');
+    
+    // Show only every 12th hour (0:00, 12:00)
+    var ticks = data
+        .filter(function(d) {
+            var hour = d.datetime.getHours();
+            return hour % 12 === 0;
+        })
+        .map(function(d){ return d.datetime; });
     
     g.append('g')
         .attr('transform', 'translate(0,' + innerHeight + ')')
@@ -596,7 +595,7 @@ function drawHourlyForecastChart(forecast) {
         .attr('text-anchor', 'middle')
         .attr('fill', '#6c757d')
         .style('font-size', '12px')
-        .text('PV-Ertrag (kWh)');
+        .text('Speicher (kWh)');
 
     var line = d3.line()
         .x(function(_, idx) { return x(timestamps[idx]); })
