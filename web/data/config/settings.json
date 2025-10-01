@@ -5,7 +5,7 @@
     "autoMode": true,
     "weatherPowerScale": 0.96,
     "minerPowerScale": 0.53,
-    "houseBaseLoad": 2,
+    "houseBaseLoad": 1,
     "latitude": 50.74677125714325,
     "longitude": 7.130950005773415,
     "miners": [
@@ -22,6 +22,13 @@
                     "battery_min_kwh": 20,
                     "pv_forecast_hours": 0,
                     "pv_forecast_min_kwh": 0
+                },
+                {
+                    "label": "Full Up",
+                    "power_kw": 3.5,
+                    "battery_min_kwh": 20,
+                    "pv_forecast_hours": 2,
+                    "pv_forecast_min_kwh": 20
                 },
                 {
                     "label": "Full",

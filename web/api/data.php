@@ -222,7 +222,7 @@ if (is_array($weatherHourly) && count($weatherHourly) > 0 && isset($miners) && i
     $cumulativePv = 0.0;
     $batteryValue = $batteryStartKwh;
     
-    // First pass: collect forecast data with timestamps
+    // First pass: collect basic hourly data with timestamps
     $hourlyDataByTime = [];
     foreach ($weatherHourly as $hour) {
         if (!isset($hour['datetime']) || !isset($hour['pv_energy_kwh'])) {
@@ -244,22 +244,25 @@ if (is_array($weatherHourly) && count($weatherHourly) > 0 && isset($miners) && i
         $pvValue = floatval($hour['pv_energy_kwh']);
         $cumulativePv += $pvValue;
         
-        $net = $pvValue - $baseLoad;
-        $batteryValue = max(0, min($batteryCapacityKwh, $batteryValue + $net));
-        
         $hourlyDataByTime[$entryTime->getTimestamp()] = [
             'datetime' => $entryTime->format(DateTime::ATOM),
             'entryTime' => $entryTime,
             'pv_energy_kwh' => $pvValue,
             'pv_energy_kwh_accumulated' => $cumulativePv,
-            'battery_level_kwh' => $batteryValue
+            'battery_level_kwh' => 0  // Will be calculated in second pass
         ];
     }
 
-    // Calculate PV forecast sums for different time horizons
+    // Second pass: Iteratively calculate battery levels and miner activity
+    // This must be done iteratively because miner decisions depend on battery level,
+    // and battery level depends on previous miner consumption
     $timestamps = array_keys($hourlyDataByTime);
-    foreach ($timestamps as $ts) {
+    $batteryValue = $batteryStartKwh;
+    
+    foreach ($timestamps as $tsIndex => $ts) {
         $currentTime = (clone $hourlyDataByTime[$ts]['entryTime']);
+        
+        // Calculate PV forecast sums for different time horizons from this point
         $pvForecastHorizons = [];
         
         // For each miner level, check their pv_forecast_hours requirement
@@ -280,7 +283,7 @@ if (is_array($weatherHourly) && count($weatherHourly) > 0 && isset($miners) && i
             $sum = 0.0;
             $endTime = (clone $currentTime)->add(new DateInterval('PT' . $hours . 'H'));
             foreach ($timestamps as $futureTs) {
-                if ($futureTs >= $ts && $hourlyDataByTime[$futureTs]['entryTime'] < $endTime) {
+                if ($futureTs > $ts && $hourlyDataByTime[$futureTs]['entryTime'] <= $endTime) {
                     $sum += $hourlyDataByTime[$futureTs]['pv_energy_kwh'];
                 }
             }
@@ -288,12 +291,10 @@ if (is_array($weatherHourly) && count($weatherHourly) > 0 && isset($miners) && i
         }
         
         $hourlyDataByTime[$ts]['pv_forecast_horizons'] = $pvForecastHorizons;
-    }
-
-    // Determine which miners run at which level for each hour
-    foreach ($timestamps as $ts) {
-        $batteryKwh = $hourlyDataByTime[$ts]['battery_level_kwh'];
-        $pvHorizons = $hourlyDataByTime[$ts]['pv_forecast_horizons'];
+        
+        // Now determine which miners run based on CURRENT battery level
+        $currentBatteryKwh = $batteryValue;
+        $pvHorizons = $pvForecastHorizons;
         
         $runningMiners = [];
         foreach ($miners as $miner) {
@@ -304,14 +305,14 @@ if (is_array($weatherHourly) && count($weatherHourly) > 0 && isset($miners) && i
             $selectedLevel = null;
             $selectedLevelIndex = -1;
             
-            // Check levels from highest to lowest power
+            // Check all levels and select the one with highest power that meets conditions
             foreach ($miner['levels'] as $levelIdx => $level) {
                 $minBattery = floatval($level['battery_min_kwh'] ?? 0);
                 $pvHours = intval($level['pv_forecast_hours'] ?? 0);
                 $minPv = floatval($level['pv_forecast_min_kwh'] ?? 0);
                 
                 // Check if battery condition is met
-                if ($batteryKwh < $minBattery) {
+                if ($currentBatteryKwh < $minBattery) {
                     continue;
                 }
                 
@@ -323,10 +324,12 @@ if (is_array($weatherHourly) && count($weatherHourly) > 0 && isset($miners) && i
                     }
                 }
                 
-                // This level qualifies
-                $selectedLevel = $level;
-                $selectedLevelIndex = $levelIdx;
-                break;
+                // This level qualifies - keep checking if there's a higher one
+                $levelPower = floatval($level['power_kw'] ?? 0);
+                if ($selectedLevel === null || $levelPower > floatval($selectedLevel['power_kw'] ?? 0)) {
+                    $selectedLevel = $level;
+                    $selectedLevelIndex = $levelIdx;
+                }
             }
             
             if ($selectedLevel !== null) {
@@ -358,6 +361,14 @@ if (is_array($weatherHourly) && count($weatherHourly) > 0 && isset($miners) && i
         $hourlyDataByTime[$ts]['running_miners'] = $runningMiners;
         $hourlyDataByTime[$ts]['total_power_kw'] = $totalPowerKw;
         $hourlyDataByTime[$ts]['total_hashrate_th'] = $totalHashrateTh;
+        
+        // Update battery level for NEXT iteration: PV + current battery - house load - miner consumption
+        $pvValue = $hourlyDataByTime[$ts]['pv_energy_kwh'];
+        $net = $pvValue - $baseLoad - $totalPowerKw;
+        $batteryValue = max(0, min($batteryCapacityKwh, $batteryValue + $net));
+        
+        // Store battery level AFTER this hour
+        $hourlyDataByTime[$ts]['battery_level_kwh'] = $batteryValue;
     }
 
     // Build final forecast array

@@ -516,7 +516,7 @@ function drawSolarPanel(powerPercent) {
     }
 }
 
-function drawHourlyForecastChart(forecast, batteryStatus) {
+function drawHourlyForecastChart(forecast, batteryStatus, miners) {
     var container = document.getElementById('hourly-forecast-chart');
     if (!container || !forecast || !Array.isArray(forecast.forecast) || forecast.forecast.length === 0) {
         if (container) container.innerHTML = '<div class="text-muted">Keine Prognosedaten verfügbar.</div>';
@@ -524,6 +524,20 @@ function drawHourlyForecastChart(forecast, batteryStatus) {
     }
 
     container.innerHTML = '';
+    
+    // Create a lookup map for miner info by ID
+    var minerMap = {};
+    if (miners && Array.isArray(miners)) {
+        miners.forEach(function(miner) {
+            if (miner.id) {
+                minerMap[miner.id] = {
+                    model: miner.model || 'Unknown',
+                    id: miner.id,
+                    levels: miner.levels || []
+                };
+            }
+        });
+    }
 
     var width = container.clientWidth || container.offsetWidth || 800;
     var height = 350;
@@ -556,23 +570,69 @@ function drawHourlyForecastChart(forecast, batteryStatus) {
         .domain([0, maxValue]).nice()
         .range([innerHeight, 0]);
 
-    // Axis with daily ticks (0:00)
-    var dayTicks = timestamps.filter(function(ts) {
+    // Axis with ticks at 0:00 and 12:00
+    var tickTimes = timestamps.filter(function(ts) {
+        var hour = ts.getHours();
+        return hour === 0 || hour === 12;
+    });
+    if (tickTimes.length === 0) {
+        tickTimes = [timestamps[0], timestamps[timestamps.length - 1]];
+    }
+
+    // Add alternating day backgrounds (gray/white)
+    var dayStarts = timestamps.filter(function(ts) {
         return ts.getHours() === 0;
     });
-    if (dayTicks.length === 0) {
-        dayTicks = d3.timeDay.range(timestamps[0], timestamps[timestamps.length - 1]);
-        if (dayTicks.indexOf(timestamps[0]) === -1) dayTicks.unshift(timestamps[0]);
-        if (dayTicks.indexOf(timestamps[timestamps.length - 1]) === -1) dayTicks.push(timestamps[timestamps.length - 1]);
-    }
+    
+    dayStarts.forEach(function(dayStart, index) {
+        if (index % 2 === 0) return; // Skip even days (keep white)
+        
+        var dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+        var x1 = x(dayStart);
+        var x2 = x(dayEnd);
+        
+        g.append('rect')
+            .attr('x', x1)
+            .attr('y', 0)
+            .attr('width', x2 - x1)
+            .attr('height', innerHeight)
+            .attr('fill', '#f8f9fa')
+            .attr('opacity', 0.5)
+            .style('pointer-events', 'none');
+    });
+
+    // Add vertical lines at 0:00 for each day
+    dayStarts.forEach(function(dayStart) {
+        var xPos = x(dayStart);
+        
+        g.append('line')
+            .attr('x1', xPos)
+            .attr('x2', xPos)
+            .attr('y1', 0)
+            .attr('y2', innerHeight)
+            .attr('stroke', '#dee2e6')
+            .attr('stroke-width', 1)
+            .style('pointer-events', 'none');
+    });
 
     g.append('g')
         .attr('transform', 'translate(0,' + innerHeight + ')')
         .call(d3.axisBottom(x)
-            .tickValues(dayTicks)
-            .tickFormat(d3.timeFormat('%d.%m.')))
+            .tickValues(tickTimes)
+            .tickFormat(function(d) {
+                var hour = d.getHours();
+                // Show date for 0:00, only time for 12:00
+                if (hour === 0) {
+                    return d3.timeFormat('%d.%m.')(d);
+                } else {
+                    return d3.timeFormat('%H:%M')(d);
+                }
+            }))
         .selectAll('text')
-        .style('text-anchor', 'middle');
+        .style('text-anchor', 'end')
+        .attr('dx', '-0.5em')
+        .attr('dy', '0.5em')
+        .attr('transform', 'rotate(-45)');
 
     g.append('g')
         .call(d3.axisLeft(y).ticks(6));
@@ -662,8 +722,18 @@ function drawHourlyForecastChart(forecast, batteryStatus) {
             if (d.running_miners && d.running_miners.length > 0) {
                 tooltipHtml += '<br/><strong>Aktive Miner:</strong><br/>';
                 d.running_miners.forEach(function(miner) {
-                    var minerLabel = 'Miner ' + miner.miner_id;
+                    var minerInfo = minerMap[miner.miner_id];
+                    var minerLabel = minerInfo ? (minerInfo.model + ' #' + minerInfo.id) : ('Miner ' + miner.miner_id);
+                    
+                    // Get level label from miner levels array
                     var levelLabel = 'Level ' + miner.level_index;
+                    if (minerInfo && minerInfo.levels && minerInfo.levels[miner.level_index]) {
+                        var level = minerInfo.levels[miner.level_index];
+                        if (level.label) {
+                            levelLabel = level.label;
+                        }
+                    }
+                    
                     var powerLabel = miner.power_kw.toFixed(2) + ' kW';
                     var hashrateLabel = miner.hashrate_th ? miner.hashrate_th.toFixed(1) + ' TH/s' : '';
                     tooltipHtml += '• ' + minerLabel + ' - ' + levelLabel + ' (' + powerLabel;
