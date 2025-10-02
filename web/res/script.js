@@ -185,12 +185,12 @@ function fetchAndRenderMiners() {
             if (data && data.pv) {
                 renderPV(data.pv);
             }
-            if (data && (data.weather_daily || data.calculation)) {
+            if (data && data.weather_daily) {
                 // Pass aggregations to the weather function
-                if (data.weather_aggregations) {
-                    window.weatherAggregations = data.weather_aggregations;
+                if (data.aggregations && data.aggregations.weather) {
+                    window.weatherAggregations = data.aggregations.weather;
                 }
-                renderWeatherAndForecast(data.weather_daily, data.calculation);
+                renderWeatherAndForecast(data.weather_daily);
             }
             if (data && data.weather_hourly) {
                 renderHourlyWeather(data.weather_hourly);
@@ -292,9 +292,9 @@ function renderPV(pv) {
     }
 }
 
-function renderWeatherAndForecast(weather, calculation) {
+function renderWeatherAndForecast(weather) {
     if (Array.isArray(weather)) {
-        // First check global weather_aggregations for server calculations
+        // First check global weatherAggregations for server calculations
         // (Structure passed from main fetch via window variable)
         if (window.weatherAggregations) {
             var agg = window.weatherAggregations;

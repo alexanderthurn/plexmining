@@ -509,20 +509,6 @@ if (is_array($weatherDaily)) {
     $weatherAggregations = $aggregatedWeather;
 }
 
-// fetch dummy calculation
-$calculation = [];
-try {
-    // Simple local include via HTTP would be expensive; instead, replicate logic here or request file.
-    // For now, read calculation through direct include if desired; we keep it simple and avoid includes.
-    $calculation = [
-        'pv_forecast_kwh_next_hours' => [1.2, 1.8, 2.5, 2.9, 2.0, 1.1],
-        'pv_forecast_kwh_total' => 11.5,
-        'notes' => 'Dummy values; see calculation.php for endpoint version.'
-    ];
-} catch (Throwable $e) {
-    $calculation = ['error' => 'calculation unavailable'];
-}
-
 $mtimes = [
     'settings' => is_file($settingsFile) ? filemtime($settingsFile) : null,
     'miners' => is_file($settingsFile) ? filemtime($settingsFile) : null, // miners are in settings.json now
@@ -541,13 +527,14 @@ $result = [
     'weather_daily' => $weatherDaily,
     'weather_hourly' => $weatherHourly,
     'pv' => $pv,
-    'calculation' => $calculation,
     'mtimes' => $mtimes,
 ];
 
 // Add aggregations if computed
 if (isset($weatherAggregations)) {
-    $result['weather_aggregations'] = $weatherAggregations;
+    $result['aggregations'] = [
+        'weather' => $weatherAggregations
+    ];
 }
 
 if ($hourlyForecast) {
