@@ -79,16 +79,6 @@ body {
     .table-responsive {
         font-size: 0.875rem;
     }
-    
-    #weather-chart {
-        height: 200px !important;
-    }
-}
-
-@media (max-width: 576px) {
-    #weather-chart {
-        height: 180px !important;
-    }
 }
 
 /* Improve card spacing */
@@ -109,14 +99,45 @@ body {
 
 
 
-#weather-chart {
+/* Chart Containers - alle Charts responsive */
+#weather-chart,
+#weather-hourly-chart,
+#hourly-forecast-chart {
     width: 100%;
     max-width: 100%;
+}
+
+#weather-chart,
+#weather-hourly-chart {
+    height: 300px;
 }
 
 .full-width-chart {
     width: 100%;
     min-height: 320px;
+}
+
+/* Responsive Chart Heights */
+@media (max-width: 768px) {
+    #weather-chart,
+    #weather-hourly-chart {
+        height: 250px;
+    }
+    
+    #hourly-forecast-chart {
+        height: 300px;
+    }
+}
+
+@media (max-width: 576px) {
+    #weather-chart,
+    #weather-hourly-chart {
+        height: 200px;
+    }
+    
+    #hourly-forecast-chart {
+        height: 250px;
+    }
 }
 
 .btn-outline-secondary:focus {
@@ -168,3 +189,9 @@ body {
 .chart-scroll-container::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
+
+/*
+#weather-hourly-chart svg, #weather-chart svg {
+    width: 100%;
+}
+    */

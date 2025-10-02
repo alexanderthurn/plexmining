@@ -2,8 +2,8 @@ function drawWeatherChart(rows) {
     var container = document.getElementById('weather-chart');
     if (!container) return;
     container.innerHTML = '';
-    var width = Math.max(container.clientWidth || 600, 300);
-    var height = container.clientHeight || 260;
+    var width = container.clientWidth || container.offsetWidth || 600;
+    var height = container.clientHeight || container.offsetHeight || 300;
     var margin = { top: 20, right: 40, bottom: 45, left: 60 };
 
     var today = new Date();
@@ -223,8 +223,8 @@ function drawHourlyWeatherChart(hourlyData) {
     var container = document.getElementById('weather-hourly-chart');
     if (!container) return;
     container.innerHTML = '';
-    var width = Math.max(container.clientWidth || 800, 400);
-    var height = container.clientHeight || 300;
+    var width = container.clientWidth || container.offsetWidth || 600;
+    var height = container.clientHeight || container.offsetHeight || 300;
     var margin = { top: 20, right: 40, bottom: 45, left: 60 };
 
     var now = new Date();

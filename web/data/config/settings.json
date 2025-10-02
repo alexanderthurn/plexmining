@@ -19,7 +19,7 @@
                 {
                     "label": "Reduced",
                     "power_kw": 1.6,
-                    "battery_min_kwh": 20,
+                    "battery_min_kwh": 30,
                     "pv_forecast_hours": 0,
                     "pv_forecast_min_kwh": 0,
                     "color": "#ff0000"
@@ -27,7 +27,7 @@
                 {
                     "label": "Full Up",
                     "power_kw": 3.5,
-                    "battery_min_kwh": 20,
+                    "battery_min_kwh": 30,
                     "pv_forecast_hours": 2,
                     "pv_forecast_min_kwh": 20,
                     "color": "#940000"
