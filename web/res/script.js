@@ -196,7 +196,7 @@ function fetchAndRenderMiners() {
                 renderHourlyWeather(data.weather_hourly);
             }
             if (data && data.hourly_forecast && data.pv) {
-                drawHourlyForecastChart(data.hourly_forecast, data.pv.batterie_stand, data.miners);
+                drawHourlyForecastChart(data.hourly_forecast, data.pv, data.miners);
             }
             // Last update timestamps: show relative age (< 7d) or date; color if >24h (warning) or >48h (danger)
             if (data && data.mtimes) {
@@ -219,77 +219,37 @@ function fetchAndRenderMiners() {
 function renderPV(pv) {
     if (!pv) return;
     
-    // Check if we have server-calculated values
-    if (pv.calculated) {
-        // Use pre-calculated server-side values (already formatted in German locale)
-        var pvPowerKw = typeof pv.pv_leistung_kw !== 'undefined' ? pv.pv_leistung_kw : (typeof pv.pv_leistung_w !== 'undefined' ? pv.pv_leistung_w / 1000 : 0);
-        var pvKwp = window.__plexSettings && window.__plexSettings.pv_kwp !== 'undefined' ? window.__plexSettings.pv_kwp : 120;
-        var pvMaxPowerKw = pvKwp; // in kW
-        var pvMaxPowerW = pvMaxPowerKw * 1000; // Convert to watts
-        var pvPowerPercent = pvMaxPowerKw > 0 ? (pvPowerKw / pvMaxPowerKw * 100) : 0;
-        
-        var pvPowerKwDisplay = (typeof pvPowerKw === 'number' && isFinite(pvPowerKw)) ? (Math.round(pvPowerKw * 10) / 10).toString().replace('.', ',') : '0';
-        setText('pv-leistung', pvPowerKwDisplay + ' kW (' + Math.round(pvPowerPercent * 10) / 10 + '%)');
-        setText('pv-kwp', pvKwp);
-        setText('batterie-kapazitaet', pv.calculated.formatted_battery_capacity);
-        setText('batterie-current', pv.calculated.formatted_battery_kwh);
-        setText('batterie-percent', typeof pv.batterie_stand?.percent === 'number' ? pv.batterie_stand.percent : '0');
-        
-        // Power values
-        setText('haus-last', pv.calculated.formatted_haus_last);
-        setText('available-power', pv.calculated.formatted_available_power);
-        
-        // Draw charts using original values (not formatted)
-        var batteryKwh = pv.batterie_stand && typeof pv.batterie_stand.kwh !== 'undefined' ? pv.batterie_stand.kwh : 0;
-        var batteryPercent = pv.batterie_stand && typeof pv.batterie_stand.percent !== 'undefined' ? pv.batterie_stand.percent : 0;
-        
-        try {
-            if (typeof d3 !== 'undefined') {
-                if (typeof drawBatteryDonut === 'function') {
-                    drawBatteryDonut(batteryPercent, batteryKwh);
-                }
-                if (typeof drawSolarPanel === 'function') {
-                    drawSolarPanel(pvPowerPercent);
-                }
-            }
-        } catch (e) { /* no-op */ }
-    } else {
-        // Fallback: Original logic if no server calculations available
-        function formatNumberDE(value, decimals) {
-            return typeof value === 'number' ? value.toFixed(decimals).replace('.', ',') : value;
-        }
-        
-        var pvPowerKw = typeof pv.pv_leistung_kw !== 'undefined' ? pv.pv_leistung_kw : (typeof pv.pv_leistung_w !== 'undefined' ? pv.pv_leistung_w / 1000 : 0);
-        var pvPowerW = pvPowerKw * 1000;
-        var pvKwp = window.__plexSettings && window.__plexSettings.pv_kwp !== 'undefined' ? window.__plexSettings.pv_kwp : 120;
-        var pvMaxPowerW = pvKwp * 1000; // Convert kWp to watts  
-        var pvPowerPercent = pvMaxPowerW > 0 ? (pvPowerW / pvMaxPowerW * 100) : 0;
-        
-        setText('pv-leistung', formatNumberDE(pvPowerKw, 1) + ' kW (' + Math.round(pvPowerPercent * 10) / 10 + '%)');
-        setText('pv-kwp', pvKwp);
-        
-        var batteryKwh = pv.batterie_stand && typeof pv.batterie_stand.kwh !== 'undefined' ? pv.batterie_stand.kwh : 0;
-        var batteryPercent = pv.batterie_stand && typeof pv.batterie_stand.percent !== 'undefined' ? pv.batterie_stand.percent : 0;
-        var batteryCapacity = pv.batterie_stand && typeof pv.batterie_stand.capacity_kwh !== 'undefined' ? pv.batterie_stand.capacity_kwh : 49.9;
-        setText('batterie-kapazitaet', formatNumberDE(batteryCapacity, 1));
-        setText('batterie-current', formatNumberDE(batteryKwh, 1));
-        setText('batterie-percent', formatNumberDE(batteryPercent, 0));
-        
-        try {
-            if (typeof d3 !== 'undefined') {
-                if (typeof drawBatteryDonut === 'function') {
-                    drawBatteryDonut(batteryPercent, batteryKwh);
-                }
-                if (typeof drawSolarPanel === 'function') {
-                    drawSolarPanel(pvPowerPercent);
-                }
-            }
-        } catch (e) { /* no-op */ }
-    }
+    // Use new simplified PV structure
+    var solarPowerKw = typeof pv.solar_power_kw === 'number' ? pv.solar_power_kw : 0;
+    var batteryKwh = typeof pv.battery_kwh === 'number' ? pv.battery_kwh : 0;
+    var batteryCapacity = typeof pv.battery_capacity_kwh === 'number' ? pv.battery_capacity_kwh : 49.9;
+    var batteryPercent = typeof pv.battery_percent === 'number' ? pv.battery_percent : 0;
     
-    if (Array.isArray(pv.miner_betriebszeiten)) {
-        setText('miner-betriebszeiten', pv.miner_betriebszeiten.join(', '));
-    }
+    var pvKwp = window.__plexSettings && window.__plexSettings.pv_kwp !== 'undefined' ? window.__plexSettings.pv_kwp : 120;
+    var pvPowerPercent = pvKwp > 0 ? (solarPowerKw / pvKwp * 100) : 0;
+    
+    // Use formatted values if available, otherwise format here
+    var solarPowerDisplay = pv.formatted_solar_power_kw || formatNumberDE(solarPowerKw, 2);
+    var batteryKwhDisplay = pv.formatted_battery_kwh || formatNumberDE(batteryKwh, 1);
+    var batteryCapacityDisplay = pv.formatted_battery_capacity || formatNumberDE(batteryCapacity, 1);
+    
+    setText('pv-leistung', solarPowerDisplay + ' kW (' + Math.round(pvPowerPercent * 10) / 10 + '%)');
+    setText('pv-kwp', pvKwp);
+    setText('batterie-kapazitaet', batteryCapacityDisplay);
+    setText('batterie-current', batteryKwhDisplay);
+    setText('batterie-percent', batteryPercent);
+    
+    // Draw charts
+    try {
+        if (typeof d3 !== 'undefined') {
+            if (typeof drawBatteryDonut === 'function') {
+                drawBatteryDonut(batteryPercent, batteryKwh);
+            }
+            if (typeof drawSolarPanel === 'function') {
+                drawSolarPanel(pvPowerPercent);
+            }
+        }
+    } catch (e) { /* no-op */ }
 }
 
 function renderWeatherAndForecast(weather) {

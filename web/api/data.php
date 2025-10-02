@@ -222,8 +222,8 @@ if (is_array($weatherHourly) && count($weatherHourly) > 0 && isset($miners) && i
 
     $baseLoad = isset($settings['houseBaseLoad']) && is_numeric($settings['houseBaseLoad']) ? floatval($settings['houseBaseLoad']) : 0.0;
     $minerPowerScale = isset($settings['minerPowerScale']) && is_numeric($settings['minerPowerScale']) ? floatval($settings['minerPowerScale']) : 1.0;
-    $batteryStartKwh = floatval($pv['batterie_stand']['kwh'] ?? 0);
-    $batteryCapacityKwh = floatval($pv['batterie_stand']['capacity_kwh'] ?? 0);
+    $batteryStartKwh = floatval($pv['battery_kwh'] ?? 0);
+    $batteryCapacityKwh = floatval($settings['batteryCapacityKwh'] ?? 49.9);
     
     $forecastData = [];
     $cumulativePv = 0.0;
@@ -410,23 +410,24 @@ if (is_array($weatherHourly) && count($weatherHourly) > 0 && isset($miners) && i
     }
 }
 
-// Add calculated values to PV data (instead of calculating in JavaScript)
+// Add formatted values to PV data for display
 if (is_array($pv)) {
-    $pvKwh = floatval($pv['batterie_stand']['kwh'] ?? 0);
-    $pvCapacity = floatval($pv['batterie_stand']['capacity_kwh'] ?? 0);
-    $houseLoad = floatval($pv['haus_last_w'] ?? 0);
-    $pvPowerKw = floatval($pv['pv_leistung_kw'] ?? 0);
-    $pvPowerW = $pvPowerKw * 1000;
+    $batteryKwh = floatval($pv['battery_kwh'] ?? 0);
+    $solarPowerKw = floatval($pv['solar_power_kw'] ?? 0);
+    $batteryCapacity = floatval($settings['batteryCapacityKwh'] ?? 49.9);
     
-    // Calculate values that were previously done in JavaScript
-    $pv['calculated'] = [
-        'availablePower' => $pvPowerW - $houseLoad,
-        'formatted_pv_power' => number_format($pvPowerW, 0, ',', '.'),
-        'formatted_battery_kwh' => number_format($pvKwh, 1, ',', '.'),
-        'formatted_battery_capacity' => number_format($pv['batterie_stand']['capacity_kwh'] ?? 49.9, 1, ',', '.'),
-        'formatted_haus_last' => number_format($houseLoad, 0, ',', '.'),
-        'formatted_available_power' => number_format($pvPowerW - $houseLoad, 0, ',', '.')
-    ];
+    // Add formatted values for frontend display
+    $pv['formatted_battery_kwh'] = number_format($batteryKwh, 1, ',', '.');
+    $pv['formatted_battery_capacity'] = number_format($batteryCapacity, 1, ',', '.');
+    $pv['formatted_solar_power_kw'] = number_format($solarPowerKw, 2, ',', '.');
+    $pv['battery_capacity_kwh'] = $batteryCapacity;
+    
+    // Calculate battery percentage
+    if ($batteryCapacity > 0) {
+        $pv['battery_percent'] = round(($batteryKwh / $batteryCapacity) * 100);
+    } else {
+        $pv['battery_percent'] = 0;
+    }
 }
 
 // Add calculated weather aggregations (to avoid JavaScript calculations)

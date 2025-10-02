@@ -516,7 +516,7 @@ function drawSolarPanel(powerPercent) {
     }
 }
 
-function drawHourlyForecastChart(forecast, batteryStatus, miners) {
+function drawHourlyForecastChart(forecast, pv, miners) {
     var container = document.getElementById('hourly-forecast-chart');
     if (!container || !forecast || !Array.isArray(forecast.forecast) || forecast.forecast.length === 0) {
         if (container) container.innerHTML = '<div class="text-muted">Keine Prognosedaten verfügbar.</div>';
@@ -577,7 +577,7 @@ function drawHourlyForecastChart(forecast, batteryStatus, miners) {
         .domain([timestamps[0], timestamps[timestamps.length - 1]])
         .range([0, innerWidth]);
 
-    var batteryCapacity = (batteryStatus && batteryStatus.capacity_kwh) ? Number(batteryStatus.capacity_kwh) : 0;
+    var batteryCapacity = (pv && pv.battery_capacity_kwh) ? Number(pv.battery_capacity_kwh) : 0;
     var maxValue = d3.max([
         d3.max(forecast.forecast, function(d) { return d.battery_level_kwh; }) || 0,
         batteryCapacity
