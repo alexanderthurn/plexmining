@@ -936,11 +936,8 @@ function setupMinerEditMode() {
             return [...window.__latestMiners];
         }
         
-        // Try settings data
-        if (window.__plexSettings && window.__plexSettings.miners) {
-            console.log('Using settings miners data:', window.__plexSettings.miners);
-            return [...window.__plexSettings.miners];
-        }
+        // Settings data no longer contains miners (they're in top-level data.miners)
+        // This fallback is kept for backward compatibility but should not be reached
         
         // Fallback: parse existing data if available
         const tbody = document.getElementById('miner-table-body');

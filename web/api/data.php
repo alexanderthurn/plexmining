@@ -531,8 +531,12 @@ $mtimes = [
     'pv' => is_file($pvFile) ? filemtime($pvFile) : null,
 ];
 
+// Remove miners from settings before output (they're in the top-level miners array)
+$settingsOutput = $settings;
+unset($settingsOutput['miners']);
+
 $result = [
-    'settings' => $settings,
+    'settings' => $settingsOutput,
     'miners' => $miners,
     'weather_daily' => $weatherDaily,
     'weather_hourly' => $weatherHourly,
