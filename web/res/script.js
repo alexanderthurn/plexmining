@@ -150,7 +150,7 @@ function populateMinerTable(miners) {
             <td>${powerHtml}</td>
             <td>${thPerKwhDisplay}</td>
             <td>${levelSummaries}</td>
-            <td>${miner.ip || '-'}</td>
+            <td><a target="${miner.ip || '-'}" href="http://${miner.ip || '-'}">${miner.ip || '-'}</a></td>
         `;
         tbody.appendChild(row);
     });
