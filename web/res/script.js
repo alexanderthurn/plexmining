@@ -143,14 +143,27 @@ function populateMinerTable(miners) {
         const minerColor = miner.color || '#999';
         const colorIndicator = `<span style="display:inline-block; width:12px; height:12px; background-color:${minerColor}; border-radius:2px; margin-left:4px;"></span>`;
         
+        // Compact info for mobile (all basic info in one cell)
+        const minerOS = miner.os || 'BrainsOSApi';
+        const compactInfo = `
+            <div class="d-md-none mb-2">
+                <div><strong>ID:</strong> ${miner.id}${colorIndicator}</div>
+                <div><strong>Modell:</strong> ${miner.model} (${minerOS})</div>
+                <div><strong>Max. TH/s:</strong> ${hashrateHtml}</div>
+                <div><strong>Max. kW:</strong> ${powerHtml}</div>
+                <div><strong>Max.TH/kWh:</strong> ${thPerKwhDisplay}</div>
+                <div><strong>IP:</strong> <a target="${miner.ip || '-'}" href="http://${miner.ip || '-'}">${miner.ip || '-'}</a></div>
+            </div>
+        `;
+        
         row.innerHTML = `
-            <td>${miner.id}${colorIndicator}</td>
-            <td>${miner.model}</td>
-            <td>${hashrateHtml}</td>
-            <td>${powerHtml}</td>
-            <td>${thPerKwhDisplay}</td>
-            <td>${levelSummaries}</td>
-            <td><a target="${miner.ip || '-'}" href="http://${miner.ip || '-'}">${miner.ip || '-'}</a></td>
+            <td class="d-none d-md-table-cell">${miner.id}${colorIndicator}</td>
+            <td class="d-none d-md-table-cell">${miner.model}<br><small class="text-muted">${minerOS}</small></td>
+            <td class="d-none d-md-table-cell">${hashrateHtml}</td>
+            <td class="d-none d-md-table-cell">${powerHtml}</td>
+            <td class="d-none d-md-table-cell">${thPerKwhDisplay}</td>
+            <td>${compactInfo}${levelSummaries}</td>
+            <td class="d-none d-md-table-cell"><a target="${miner.ip || '-'}" href="http://${miner.ip || '-'}">${miner.ip || '-'}</a></td>
         `;
         tbody.appendChild(row);
     });
