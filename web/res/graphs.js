@@ -457,7 +457,7 @@ function drawBatteryDonut(percent, kwh) {
         .sort(null);
 
     var data = [
-        { value: percent, color: '#28a745' },
+        { value: percent, color: '#0d6efd' },
         { value: 100 - percent, color: '#e9ecef' }
     ];
 
@@ -477,7 +477,7 @@ function drawBatteryDonut(percent, kwh) {
         .attr('dy', '0.35em')
         .style('font-size', '24px')
         .style('font-weight', 'bold')
-        .style('fill', '#28a745')
+        .style('fill', '#0d6efd')
         .text(percent + '%');
 }
 
