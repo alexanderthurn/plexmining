@@ -642,7 +642,15 @@ function drawHourlyForecastChart(forecast, pv, miners) {
         .domain([0, maxValue]).nice()
         .range([innerHeight, 0]);
 
-    // Create second Y axis for hashrate (TH/s) - for bar scaling only, not displayed
+    // Create second Y axis for PV energy (right side)
+    var maxPvEnergy = d3.max(workingForecast.forecast, function(d) {
+        return (d.pv_forecast_horizons && d.pv_forecast_horizons[1]) ? d.pv_forecast_horizons[1] : 0;
+    }) || 1;
+    var yPv = d3.scaleLinear()
+        .domain([0, maxPvEnergy]).nice()
+        .range([innerHeight, 0]);
+
+    // Create third Y axis for hashrate (TH/s) - for bar scaling only, not displayed
     var maxHashrate = d3.max(workingForecast.forecast, function(d) { return d.total_hashrate_th || 0; }) || 1;
     var yHashrate = d3.scaleLinear()
         .domain([0, maxHashrate]).nice()
@@ -740,6 +748,11 @@ function drawHourlyForecastChart(forecast, pv, miners) {
     g.append('g')
         .call(d3.axisLeft(y).ticks(6));
 
+    // Right Y axis for PV energy
+    g.append('g')
+        .attr('transform', 'translate(' + innerWidth + ',0)')
+        .call(d3.axisRight(yPv).ticks(6));
+
     g.append('text')
         .attr('x', innerWidth / 2)
         .attr('y', innerHeight + 40)
@@ -756,6 +769,15 @@ function drawHourlyForecastChart(forecast, pv, miners) {
         .attr('fill', '#6c757d')
         .style('font-size', '12px')
         .text('Speicher (kWh)');
+
+    g.append('text')
+        .attr('transform', 'rotate(-90)')
+        .attr('x', -innerHeight / 2)
+        .attr('y', innerWidth + 35)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#28a745')
+        .style('font-size', '12px')
+        .text('PV-1h (kWh)');
 
     // Create tooltip
     var tooltip = d3.select('body').append('div')
@@ -815,6 +837,23 @@ function drawHourlyForecastChart(forecast, pv, miners) {
         .attr('stroke-width', 2)
         .attr('d', line);
 
+    // Draw PV energy forecast line (1h horizon)
+    var pvLine = d3.line()
+        .x(function(d, idx) { return x(timestamps[idx]); })
+        .y(function(d) { 
+            var pvValue = (d.pv_forecast_horizons && d.pv_forecast_horizons[1]) ? d.pv_forecast_horizons[1] : 0;
+            return yPv(pvValue);
+        })
+        .curve(d3.curveMonotoneX);
+
+    g.append('path')
+        .datum(workingForecast.forecast)
+        .attr('class', 'forecast-pv-line')
+        .attr('fill', 'none')
+        .attr('stroke', '#28a745')
+        .attr('stroke-width', 2)
+        .attr('d', pvLine);
+
     // Add invisible rectangles for easier hover interaction across full width of each time slot
     var slotWidth = timestamps.length > 1 ? x(timestamps[1]) - x(timestamps[0]) : 10;
     
@@ -848,6 +887,11 @@ function drawHourlyForecastChart(forecast, pv, miners) {
                 tooltipHtml += 'Speicher (Ende): <strong>' + d.battery_level_kwh_end.toFixed(2) + ' kWh</strong><br/>';
             } else {
                 tooltipHtml += 'Speicher: <strong>' + d.battery_level_kwh.toFixed(2) + ' kWh</strong><br/>';
+            }
+            
+            // PV forecast 1h (prominently displayed)
+            if (d.pv_forecast_horizons && d.pv_forecast_horizons[1] !== undefined) {
+                tooltipHtml += 'PV-Ertrag (1h): <strong style="color:#28a745;">' + d.pv_forecast_horizons[1].toFixed(2) + ' kWh</strong><br/>';
             }
             
             // House base load

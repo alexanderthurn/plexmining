@@ -937,6 +937,25 @@ function setupMinerEditMode() {
         return [];
     }
     
+    function addNewMinerRow() {
+        const editTable = document.getElementById('miner-edit-table');
+        if (!editTable) return;
+        
+        // Create a new empty miner object
+        const newMiner = {
+            id: '',
+            model: '',
+            hashrate: 0,
+            power_kw: 0,
+            ip: '',
+            color: getDefaultColor(editTable.children.length),
+            levels: []
+        };
+        
+        // Add the new row
+        addEditRow(newMiner, null);
+    }
+    
     function addEditRow(miner, index = null) {
         const editTable = document.getElementById('miner-edit-table');
         if (!editTable) return;
