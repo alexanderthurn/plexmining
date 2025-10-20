@@ -225,7 +225,17 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">Mining-Prognose <span class="text-muted" style="font-size: 0.9rem;" id="mining-forecast-avg-hashrate"></span></h5>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0">Mining-Prognose <span class="text-muted" style="font-size: 0.9rem;" id="mining-forecast-avg-hashrate"></span></h5>
+                            <select class="form-select form-select-sm" id="forecast-timerange-select" style="width: auto; min-width: 120px;">
+                                <option value="12">12 Stunden</option>
+                                <option value="24">24 Stunden</option>
+                                <option value="48">48 Stunden</option>
+                                <option value="72">3 Tage</option>
+                                <option value="168">7 Tage</option>
+                                <option value="336">14 Tage</option>
+                            </select>
+                        </div>
                         <div id="hourly-forecast-chart" class="full-width-chart"></div>
                     </div>
                 </div>

@@ -1,6 +1,10 @@
 function drawWeatherChart(rows) {
     var container = document.getElementById('weather-chart');
     if (!container) return;
+    
+    // Store data for resize events
+    window.__latestWeatherDaily = rows;
+    
     container.innerHTML = '';
     var width = container.clientWidth || container.offsetWidth || 600;
     var height = container.clientHeight || container.offsetHeight || 300;
@@ -65,12 +69,15 @@ function drawWeatherChart(rows) {
         .style('font-size', '12px')
         .style('pointer-events', 'none');
 
+    // Calculate ticks based on width: ~1 tick per 80 pixels
+    var numTicks = Math.max(3, Math.floor(innerWidth / 80));
+    
     // Axes
     g.append('g')
         .attr('transform', 'translate(0,' + innerHeight + ')')
         .call(d3.axisBottom(x)
             .tickFormat(d3.timeFormat('%d.%m.'))
-            .ticks(6));
+            .ticks(numTicks));
 
     g.append('g')
         .call(d3.axisLeft(y).ticks(5));
@@ -222,6 +229,10 @@ function drawWeatherChart(rows) {
 function drawHourlyWeatherChart(hourlyData) {
     var container = document.getElementById('weather-hourly-chart');
     if (!container) return;
+    
+    // Store data for resize events
+    window.__latestWeatherHourly = hourlyData;
+    
     container.innerHTML = '';
     var width = container.clientWidth || container.offsetWidth || 600;
     var height = container.clientHeight || container.offsetHeight || 300;
@@ -287,13 +298,25 @@ function drawHourlyWeatherChart(hourlyData) {
     var dataCount = data.length;
     var tickFormat = d3.timeFormat('%H:%M');
     
-    // Show only every 12th hour (0:00, 12:00)
-    var ticks = data
-        .filter(function(d) {
-            var hour = d.datetime.getHours();
-            return hour % 12 === 0;
-        })
-        .map(function(d){ return d.datetime; });
+    // Calculate how many ticks to show: ~1 tick per 60 pixels
+    var maxTicks = Math.max(3, Math.floor(innerWidth / 60));
+    
+    // Get ticks at 0:00 and 12:00 hours
+    var allPotentialTicks = data.filter(function(d) {
+        var hour = d.datetime.getHours();
+        return hour % 12 === 0;
+    });
+    
+    // Select evenly spaced ticks
+    var ticks = [];
+    if (allPotentialTicks.length <= maxTicks) {
+        ticks = allPotentialTicks.map(function(d){ return d.datetime; });
+    } else {
+        var step = Math.ceil(allPotentialTicks.length / maxTicks);
+        for (var i = 0; i < allPotentialTicks.length; i += step) {
+            ticks.push(allPotentialTicks[i].datetime);
+        }
+    }
     
     g.append('g')
         .attr('transform', 'translate(0,' + innerHeight + ')')
@@ -516,6 +539,23 @@ function drawSolarPanel(powerPercent) {
     }
 }
 
+// Store latest data for redrawing on resize
+var __latestForecastData = null;
+
+// Dynamischer Default abhängig von der Bildschirmbreite
+function getDefaultForecastHours() {
+    var width = window.innerWidth || document.documentElement.clientWidth;
+    if (width < 768) {
+        return 12; // Mobile: 12 Stunden
+    } else if (width < 1200) {
+        return 48; // Tablet: 48 Stunden
+    } else {
+        return 168; // Desktop: 7 Tage
+    }
+}
+
+var __forecastTimerangeHours = getDefaultForecastHours();
+
 function drawHourlyForecastChart(forecast, pv, miners) {
     var container = document.getElementById('hourly-forecast-chart');
     if (!container || !forecast || !Array.isArray(forecast.forecast) || forecast.forecast.length === 0) {
@@ -523,12 +563,27 @@ function drawHourlyForecastChart(forecast, pv, miners) {
         return;
     }
 
+    // FILTER: Zeitraum basierend auf Auswahl
+    var now = new Date();
+    var endTime = new Date(now.getTime() + __forecastTimerangeHours * 60 * 60 * 1000);
+    
+    var filteredForecast = forecast.forecast.filter(function(d) {
+        var timestamp = new Date(d.datetime);
+        return timestamp >= now && timestamp <= endTime;
+    });
+    
+    // Verwende gefilterte Daten
+    var workingForecast = { forecast: filteredForecast };
+    
+    // Store ORIGINAL data for resize events and timerange changes
+    __latestForecastData = { forecast: forecast, pv: pv, miners: miners };
+
     container.innerHTML = '';
     
     // Calculate average hashrate over the entire period
     var totalHashrate = 0;
     var count = 0;
-    forecast.forecast.forEach(function(d) {
+    workingForecast.forecast.forEach(function(d) {
         if (d.total_hashrate_th !== undefined) {
             totalHashrate += d.total_hashrate_th;
             count++;
@@ -569,7 +624,7 @@ function drawHourlyForecastChart(forecast, pv, miners) {
 
     var g = svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-    var timestamps = forecast.forecast.map(function(d) {
+    var timestamps = workingForecast.forecast.map(function(d) {
         return new Date(d.datetime);
     });
 
@@ -579,7 +634,7 @@ function drawHourlyForecastChart(forecast, pv, miners) {
 
     var batteryCapacity = (pv && pv.battery_capacity_kwh) ? Number(pv.battery_capacity_kwh) : 0;
     var maxValue = d3.max([
-        d3.max(forecast.forecast, function(d) { return d.battery_level_kwh; }) || 0,
+        d3.max(workingForecast.forecast, function(d) { return d.battery_level_kwh; }) || 0,
         batteryCapacity
     ]);
 
@@ -588,7 +643,7 @@ function drawHourlyForecastChart(forecast, pv, miners) {
         .range([innerHeight, 0]);
 
     // Create second Y axis for hashrate (TH/s) - for bar scaling only, not displayed
-    var maxHashrate = d3.max(forecast.forecast, function(d) { return d.total_hashrate_th || 0; }) || 1;
+    var maxHashrate = d3.max(workingForecast.forecast, function(d) { return d.total_hashrate_th || 0; }) || 1;
     var yHashrate = d3.scaleLinear()
         .domain([0, maxHashrate]).nice()
         .range([innerHeight, 0]);
@@ -601,11 +656,28 @@ function drawHourlyForecastChart(forecast, pv, miners) {
         return miner.levels[levelIndex].color || '#999';
     }
 
-    // Axis with ticks at 0:00 and 12:00
-    var tickTimes = timestamps.filter(function(ts) {
+    // Calculate how many ticks to show based on width (simple multiplier)
+    // ~1 tick per 80-100 pixels of width
+    var maxTicks = Math.max(3, Math.floor(innerWidth / 80));
+    
+    // Get all potential tick times (0:00 and 12:00)
+    var allTickTimes = timestamps.filter(function(ts) {
         var hour = ts.getHours();
         return hour === 0 || hour === 12;
     });
+    
+    // Select evenly spaced ticks based on maxTicks
+    var tickTimes = [];
+    if (allTickTimes.length <= maxTicks) {
+        tickTimes = allTickTimes;
+    } else {
+        var step = Math.ceil(allTickTimes.length / maxTicks);
+        for (var i = 0; i < allTickTimes.length; i += step) {
+            tickTimes.push(allTickTimes[i]);
+        }
+    }
+    
+    // Ensure we always have at least start and end
     if (tickTimes.length === 0) {
         tickTimes = [timestamps[0], timestamps[timestamps.length - 1]];
     }
@@ -701,7 +773,7 @@ function drawHourlyForecastChart(forecast, pv, miners) {
     // Draw stacked miner bars
     var barWidth = Math.max(2, (innerWidth / timestamps.length) * 0.8);
     
-    forecast.forecast.forEach(function(d, idx) {
+    workingForecast.forecast.forEach(function(d, idx) {
         if (!d.running_miners || d.running_miners.length === 0) return;
         
         var xPos = x(timestamps[idx]) - barWidth / 2;
@@ -736,7 +808,7 @@ function drawHourlyForecastChart(forecast, pv, miners) {
         .curve(d3.curveMonotoneX);
 
     g.append('path')
-        .datum(forecast.forecast)
+        .datum(workingForecast.forecast)
         .attr('class', 'forecast-cumulative-line')
         .attr('fill', 'none')
         .attr('stroke', '#0d6efd')
@@ -747,7 +819,7 @@ function drawHourlyForecastChart(forecast, pv, miners) {
     var slotWidth = timestamps.length > 1 ? x(timestamps[1]) - x(timestamps[0]) : 10;
     
     g.selectAll('.forecast-hover-area')
-        .data(forecast.forecast)
+        .data(workingForecast.forecast)
         .enter()
         .append('rect')
         .attr('class', 'forecast-hover-area')
@@ -860,4 +932,77 @@ function drawHourlyForecastChart(forecast, pv, miners) {
             .style('pointer-events', 'none');
 
     }
+}
+
+// Resize handler with debouncing to redraw charts on window resize
+var __resizeTimeout = null;
+var __resizeHandlerInitialized = false;
+
+function initChartResizeHandler() {
+    if (__resizeHandlerInitialized) return;
+    __resizeHandlerInitialized = true;
+    
+    window.addEventListener('resize', function() {
+        clearTimeout(__resizeTimeout);
+        __resizeTimeout = setTimeout(function() {
+            // Redraw hourly forecast chart if data is available
+            if (__latestForecastData) {
+                drawHourlyForecastChart(
+                    __latestForecastData.forecast, 
+                    __latestForecastData.pv, 
+                    __latestForecastData.miners
+                );
+            }
+            
+            // Redraw weather charts if data is available
+            if (window.__latestWeatherDaily) {
+                drawWeatherChart(window.__latestWeatherDaily);
+            }
+            
+            if (window.__latestWeatherHourly) {
+                drawHourlyWeatherChart(window.__latestWeatherHourly);
+            }
+        }, 250); // Wait 250ms after last resize event
+    });
+}
+
+// Initialize resize handler when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initChartResizeHandler);
+} else {
+    initChartResizeHandler();
+}
+
+// Setup forecast timerange selector
+function initForecastTimerangeSelector() {
+    var select = document.getElementById('forecast-timerange-select');
+    if (!select) return;
+    
+    // Set initial value from variable
+    select.value = __forecastTimerangeHours;
+    
+    // Add change event listener
+    select.addEventListener('change', function() {
+        var hours = parseInt(this.value, 10);
+        if (isNaN(hours) || hours <= 0) return;
+        
+        // Update global variable
+        __forecastTimerangeHours = hours;
+        
+        // Redraw chart with new timerange if data is available
+        if (__latestForecastData) {
+            drawHourlyForecastChart(
+                __latestForecastData.forecast, 
+                __latestForecastData.pv, 
+                __latestForecastData.miners
+            );
+        }
+    });
+}
+
+// Initialize timerange selector when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initForecastTimerangeSelector);
+} else {
+    initForecastTimerangeSelector();
 }
