@@ -38,11 +38,11 @@ function formatLevelNumber(value, fractionDigits) {
 function formatLevelSummaryLocal(level) {
     if (!level || typeof level !== 'object') return '';
     const power = formatLevelNumber(level.power_kw, 1) + ' kW';
-    const battery = formatLevelNumber(level.battery_min_kwh, 1) + ' kWh';
-    const pvEnergy = formatLevelNumber(level.pv_forecast_min_kwh, 1) + ' kWh';
+    const battery = formatLevelNumber(level.battery_min_kwh, 1);
+    const pvEnergy = formatLevelNumber(level.pv_forecast_min_kwh, 1);
     const pvHoursValue = toNumberOrNull(level.pv_forecast_hours);
     const pvHours = pvHoursValue === null ? '–' : pvHoursValue + 'h';
-    return `${power} · ${battery} · PV ${pvEnergy} / ${pvHours}`;
+    return `(${power}): ${battery} + ${pvEnergy} / ${pvHours}`;
 }
 
 function getLevelSummary(level) {
@@ -136,7 +136,7 @@ function populateMinerTable(miners) {
             ? levelSource.map(level => {
                 const label = level.label || '';
                 const summary = getLevelSummary(level);
-                return `<div><strong>${label}</strong>: ${summary}</div>`;
+                return `<div><strong>${label}</strong> ${summary}</div>`;
             }).join('')
             : '<span class="text-muted">Keine Regeln</span>';
         

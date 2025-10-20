@@ -151,8 +151,13 @@ function formatLevelSummary(level) {
     if (!level) return '';
     const power = parseMaybeNumber(level.power_kw);
     const battery = parseMaybeNumber(level.battery_min_kwh);
-    const pv = formatPVForecast(level);
+    const pvEnergy = parseMaybeNumber(level.pv_forecast_min_kwh);
+    const pvHours = parseMaybeNumber(level.pv_forecast_hours);
+    
     const powerText = power !== null ? formatNumberDE(power, 1) + ' kW' : '–';
-    const batteryText = battery !== null ? formatNumberDE(battery, 1) + ' kWh' : '–';
-    return `${powerText} · ${batteryText} · PV ${pv}`;
+    const batteryText = battery !== null ? formatNumberDE(battery, 1) : '–';
+    const pvEnergyText = pvEnergy !== null ? formatNumberDE(pvEnergy, 1) : '–';
+    const pvHoursText = pvHours !== null ? pvHours + 'h' : '–';
+    
+    return `(${powerText}): ${batteryText} + ${pvEnergyText} / ${pvHoursText}`;
 }

@@ -16,8 +16,8 @@
             "hashrate": 300,
             "power_kw": 3.5,
             "ip": "192.168.1.101",
-            "color": "#ff0000",
             "os": "BrainsOSApi",
+            "color": "#ff0000",
             "levels": [
                 {
                     "label": "Reduced",
@@ -48,8 +48,8 @@
             "hashrate": 200,
             "power_kw": 3.5,
             "ip": "192.168.1.102",
-            "color": "#3498db",
             "os": "BrainsOSApi",
+            "color": "#3498db",
             "levels": [
                 {
                     "label": "Reduced",
@@ -73,8 +73,8 @@
             "hashrate": 110,
             "power_kw": 3.5,
             "ip": "192.168.1.107",
-            "color": "#8a8a8a",
             "os": "BrainsOSApi",
+            "color": "#8a8a8a",
             "levels": [
                 {
                     "label": "Full",
@@ -91,8 +91,8 @@
             "hashrate": 100,
             "power_kw": 3.5,
             "ip": "192.168.1.103",
-            "color": "#bababa",
             "os": "BrainsOSApi",
+            "color": "#bababa",
             "levels": [
                 {
                     "label": "Full",
@@ -109,8 +109,8 @@
             "hashrate": 100,
             "power_kw": 3.5,
             "ip": "192.168.1.104",
-            "color": "#919191",
             "os": "BrainsOSApi",
+            "color": "#919191",
             "levels": [
                 {
                     "label": "Full",
@@ -127,8 +127,8 @@
             "hashrate": 100,
             "power_kw": 3.5,
             "ip": "192.168.1.105",
-            "color": "#999999",
             "os": "BrainsOSApi",
+            "color": "#999999",
             "levels": [
                 {
                     "label": "Full",
@@ -145,8 +145,8 @@
             "hashrate": 13,
             "power_kw": 1.3,
             "ip": "10.10.10.125",
+            "os": "BrainsOSApi",
             "color": "#e00bb9",
-            "os": "BrainsOSSSH",
             "levels": [
                 {
                     "label": "Full",
