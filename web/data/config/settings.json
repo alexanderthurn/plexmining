@@ -135,11 +135,11 @@
         },
         {
             "id": "8",
-            "model": "S 19J PRO",
-            "hashrate": 100,
-            "power_kw": 3.5,
-            "ip": "192.168.1.106",
-            "color": "#8c8c8c",
+            "model": "S 9",
+            "hashrate": 13,
+            "power_kw": 1.3,
+            "ip": "10.10.10.125",
+            "color": "#e00bb9",
             "levels": [
                 {
                     "label": "Full",
