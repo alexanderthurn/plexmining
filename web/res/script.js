@@ -67,14 +67,12 @@ function normalizeLevelList(levels) {
             const battery = toNumberOrNull(level?.battery_min_kwh);
             const pvHours = toNumberOrNull(level?.pv_forecast_hours);
             const pvEnergy = toNumberOrNull(level?.pv_forecast_min_kwh);
-            const color = level?.color || getDefaultColor(index);
             return {
                 label,
                 power_kw: power ?? 0,
                 battery_min_kwh: battery ?? 0,
                 pv_forecast_hours: pvHours ?? 0,
-                pv_forecast_min_kwh: pvEnergy ?? 0,
-                color: color
+                pv_forecast_min_kwh: pvEnergy ?? 0
             };
         })
         .filter(level => level.power_kw > 0);
@@ -138,13 +136,15 @@ function populateMinerTable(miners) {
             ? levelSource.map(level => {
                 const label = level.label || '';
                 const summary = getLevelSummary(level);
-                const color = level.color || '#999';
-                return `<div><span style="display:inline-block; width:12px; height:12px; background-color:${color}; border-radius:2px; margin-right:4px;"></span><strong>${label}</strong>: ${summary}</div>`;
+                return `<div><strong>${label}</strong>: ${summary}</div>`;
             }).join('')
             : '<span class="text-muted">Keine Regeln</span>';
         
+        const minerColor = miner.color || '#999';
+        const colorIndicator = `<span style="display:inline-block; width:12px; height:12px; background-color:${minerColor}; border-radius:2px; margin-left:4px;"></span>`;
+        
         row.innerHTML = `
-            <td>${miner.id}</td>
+            <td>${miner.id}${colorIndicator}</td>
             <td>${miner.model}</td>
             <td>${hashrateHtml}</td>
             <td>${powerHtml}</td>
@@ -947,6 +947,7 @@ function setupMinerEditMode() {
         const minerId = miner?.id || (index !== null ? currentMiners.length + index : currentMiners.length + 1);
         
         const powerKwValue = (typeof miner?.power_kw === 'number') ? miner.power_kw : (typeof miner?.power === 'number' ? miner.power / 1000 : '');
+        const minerColor = miner?.color || getDefaultColor(index !== null ? index : 0);
         const levels = (() => {
             const resolved = resolveLevels(miner);
             if (resolved.length) {
@@ -977,6 +978,10 @@ function setupMinerEditMode() {
                     <div class="col-md-2">
                         <label class="form-label small">IP-Adresse</label>
                         <input type="text" class="form-control form-control-sm" data-field="ip" value="${miner?.ip || ''}" placeholder="192.168.1.101">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">Farbe</label>
+                        <input type="color" class="form-control form-control-sm form-control-color" data-field="color" value="${minerColor}">
                     </div>
                     <div class="col-12">
                         <label class="form-label small">Leistungsstufen</label>
@@ -1056,17 +1061,12 @@ function setupMinerEditMode() {
         const battery = level.battery_min_kwh ?? '';
         const pvHours = level.pv_forecast_hours ?? '';
         const pvEnergy = level.pv_forecast_min_kwh ?? '';
-        const color = level.color || getDefaultColor(levelIndex);
         return `
             <div class="border rounded p-2 mb-2" data-level-row="true">
                 <div class="row g-2 align-items-end">
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label class="form-label small">Label</label>
                         <input type="text" class="form-control form-control-sm" data-level-field="label" value="${label}">
-                    </div>
-                    <div class="col-md-1">
-                        <label class="form-label small">Farbe</label>
-                        <input type="color" class="form-control form-control-sm form-control-color" data-level-field="color" value="${color}">
                     </div>
                     <div class="col-md-2">
                         <label class="form-label small">Leistung (kW)</label>
@@ -1174,6 +1174,8 @@ function setupMinerEditMode() {
                     miner[field] = value && !isNaN(value) ? parseFloat(value) : 0;
                 } else if (field === 'id') {
                     miner[field] = value || `miner-${index + 1}`;
+                } else if (field === 'color') {
+                    miner[field] = value || getDefaultColor(index);
                 } else {
                     miner[field] = value;
                 }
@@ -1227,6 +1229,7 @@ function setupMinerEditMode() {
                     hashrate: typeof miner.hashrate === 'number' ? miner.hashrate : 0,
                     power_kw: typeof miner.power_kw === 'number' ? miner.power_kw : 0,
                     ip: miner.ip || '',
+                    color: miner.color || getDefaultColor(index),
                     levels: normalizedLevels.length ? normalizedLevels : createDefaultLevels(miner)
                 };
 
@@ -1297,7 +1300,7 @@ function setupMinerEditMode() {
             const level = {};
             rowEl.querySelectorAll('[data-level-field]').forEach(fieldEl => {
                 const key = fieldEl.getAttribute('data-level-field');
-                if (key === 'label' || key === 'color') {
+                if (key === 'label') {
                     level[key] = fieldEl.value.trim();
                 } else {
                     level[key] = toNumberOrNull(fieldEl.value.trim());

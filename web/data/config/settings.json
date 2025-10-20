@@ -16,30 +16,28 @@
             "hashrate": 300,
             "power_kw": 3.5,
             "ip": "192.168.1.101",
+            "color": "#ff0000",
             "levels": [
                 {
                     "label": "Reduced",
                     "power_kw": 1.6,
                     "battery_min_kwh": 30,
                     "pv_forecast_hours": 0,
-                    "pv_forecast_min_kwh": 0,
-                    "color": "#ff0000"
+                    "pv_forecast_min_kwh": 0
                 },
                 {
                     "label": "Full Up",
                     "power_kw": 3.5,
                     "battery_min_kwh": 30,
                     "pv_forecast_hours": 2,
-                    "pv_forecast_min_kwh": 20,
-                    "color": "#940000"
+                    "pv_forecast_min_kwh": 20
                 },
                 {
                     "label": "Full",
                     "power_kw": 3.5,
                     "battery_min_kwh": 40,
                     "pv_forecast_hours": 12,
-                    "pv_forecast_min_kwh": 30,
-                    "color": "#6b0000"
+                    "pv_forecast_min_kwh": 30
                 }
             ]
         },
@@ -49,22 +47,21 @@
             "hashrate": 200,
             "power_kw": 3.5,
             "ip": "192.168.1.102",
+            "color": "#3498db",
             "levels": [
                 {
                     "label": "Reduced",
                     "power_kw": 1.6,
                     "battery_min_kwh": 40,
                     "pv_forecast_hours": 12,
-                    "pv_forecast_min_kwh": 40,
-                    "color": "#3498db"
+                    "pv_forecast_min_kwh": 40
                 },
                 {
                     "label": "Full",
                     "power_kw": 3.5,
                     "battery_min_kwh": 45,
                     "pv_forecast_hours": 12,
-                    "pv_forecast_min_kwh": 50,
-                    "color": "#2d579a"
+                    "pv_forecast_min_kwh": 50
                 }
             ]
         },
@@ -74,14 +71,14 @@
             "hashrate": 110,
             "power_kw": 3.5,
             "ip": "192.168.1.107",
+            "color": "#8a8a8a",
             "levels": [
                 {
                     "label": "Full",
                     "power_kw": 3.5,
                     "battery_min_kwh": 45,
                     "pv_forecast_hours": 1,
-                    "pv_forecast_min_kwh": 10,
-                    "color": "#8a8a8a"
+                    "pv_forecast_min_kwh": 10
                 }
             ]
         },
@@ -91,14 +88,14 @@
             "hashrate": 100,
             "power_kw": 3.5,
             "ip": "192.168.1.103",
+            "color": "#bababa",
             "levels": [
                 {
                     "label": "Full",
                     "power_kw": 3.5,
                     "battery_min_kwh": 45,
                     "pv_forecast_hours": 1,
-                    "pv_forecast_min_kwh": 15,
-                    "color": "#bababa"
+                    "pv_forecast_min_kwh": 15
                 }
             ]
         },
@@ -108,14 +105,14 @@
             "hashrate": 100,
             "power_kw": 3.5,
             "ip": "192.168.1.104",
+            "color": "#919191",
             "levels": [
                 {
                     "label": "Full",
                     "power_kw": 3.5,
                     "battery_min_kwh": 45,
                     "pv_forecast_hours": 1,
-                    "pv_forecast_min_kwh": 20,
-                    "color": "#919191"
+                    "pv_forecast_min_kwh": 20
                 }
             ]
         },
@@ -125,14 +122,14 @@
             "hashrate": 100,
             "power_kw": 3.5,
             "ip": "192.168.1.105",
+            "color": "#999999",
             "levels": [
                 {
                     "label": "Full",
                     "power_kw": 3.5,
                     "battery_min_kwh": 45,
                     "pv_forecast_hours": 1,
-                    "pv_forecast_min_kwh": 25,
-                    "color": "#999999"
+                    "pv_forecast_min_kwh": 25
                 }
             ]
         },
@@ -142,14 +139,14 @@
             "hashrate": 100,
             "power_kw": 3.5,
             "ip": "192.168.1.106",
+            "color": "#8c8c8c",
             "levels": [
                 {
                     "label": "Full",
                     "power_kw": 3.5,
                     "battery_min_kwh": 45,
                     "pv_forecast_hours": 1,
-                    "pv_forecast_min_kwh": 30,
-                    "color": "#8c8c8c"
+                    "pv_forecast_min_kwh": 30
                 }
             ]
         }

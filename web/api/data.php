@@ -25,7 +25,6 @@ $settings = json_read_assoc($settingsFile, []);
 $miners = isset($settings['miners']) && is_array($settings['miners']) ? $settings['miners'] : [];
 
 function normalize_levels(array $levels): array {
-    $defaultColors = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22', '#34495e', '#16a085', '#d35400'];
     $normalized = [];
     foreach ($levels as $index => $level) {
         if (!is_array($level)) continue;
@@ -36,9 +35,6 @@ function normalize_levels(array $levels): array {
         $battery = isset($level['battery_min_kwh']) && is_numeric($level['battery_min_kwh']) ? (float)$level['battery_min_kwh'] : 0.0;
         $pvHours = isset($level['pv_forecast_hours']) && is_numeric($level['pv_forecast_hours']) ? (int)$level['pv_forecast_hours'] : 0;
         $pvEnergy = isset($level['pv_forecast_min_kwh']) && is_numeric($level['pv_forecast_min_kwh']) ? (float)$level['pv_forecast_min_kwh'] : 0.0;
-        $color = isset($level['color']) && is_string($level['color']) && trim($level['color']) !== ''
-            ? trim($level['color'])
-            : $defaultColors[$index % count($defaultColors)];
 
         if ($power <= 0) {
             continue; // Skip invalid power entries
@@ -50,7 +46,6 @@ function normalize_levels(array $levels): array {
             'battery_min_kwh' => $battery,
             'pv_forecast_hours' => $pvHours,
             'pv_forecast_min_kwh' => $pvEnergy,
-            'color' => $color,
         ];
     }
 
@@ -115,6 +110,7 @@ $pv = json_read_assoc($pvFile, []);
 
 // Add cumulative (accumulated) values and TH/kWh calculation for miners
 if (is_array($miners)) {
+    $defaultColors = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22', '#34495e', '#16a085', '#d35400'];
     $cumulativeHashrate = 0;
     $cumulativePowerKw = 0;
     
@@ -130,6 +126,11 @@ foreach ($miners as $index => &$miner) {
         } elseif (isset($miner['power']) && is_numeric($miner['power'])) {
             $powerKw = floatval($miner['power']) / 1000;
             $miner['power_kw'] = $powerKw;
+        }
+        
+        // Ensure miner has a color
+        if (!isset($miner['color']) || !is_string($miner['color']) || trim($miner['color']) === '') {
+            $miner['color'] = $defaultColors[$index % count($defaultColors)];
         }
         
         $cumulativeHashrate += $hashrate;
@@ -156,7 +157,6 @@ foreach ($miners as $index => &$miner) {
                     'battery_min_kwh' => $level['battery_min_kwh'],
                     'pv_forecast_hours' => $level['pv_forecast_hours'],
                     'pv_forecast_min_kwh' => $level['pv_forecast_min_kwh'],
-                    'color' => $level['color'] ?? '#999',
                 ];
             }, $miner['levels']);
         }

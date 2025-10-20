@@ -648,12 +648,12 @@ function drawHourlyForecastChart(forecast, pv, miners) {
         .domain([0, maxHashrate]).nice()
         .range([innerHeight, 0]);
     
-    // Function to get level color from miner configuration
-    function getLevelColor(minerId, levelIndex) {
+    // Function to get miner color from miner configuration
+    function getMinerColor(minerId) {
         if (!miners || !Array.isArray(miners)) return '#999';
         var miner = miners.find(function(m) { return m.id === minerId; });
-        if (!miner || !miner.levels || !miner.levels[levelIndex]) return '#999';
-        return miner.levels[levelIndex].color || '#999';
+        if (!miner) return '#999';
+        return miner.color || '#999';
     }
 
     // Calculate how many ticks to show based on width (simple multiplier)
@@ -793,7 +793,7 @@ function drawHourlyForecastChart(forecast, pv, miners) {
                 .attr('y', yOffset - barHeight)
                 .attr('width', barWidth)
                 .attr('height', barHeight)
-                .attr('fill', getLevelColor(miner.miner_id, miner.level_index))
+                .attr('fill', getMinerColor(miner.miner_id))
                 .attr('opacity', 0.7)
                 .style('pointer-events', 'none');
             
