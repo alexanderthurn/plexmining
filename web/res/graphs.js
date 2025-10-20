@@ -110,7 +110,7 @@ function drawWeatherChart(rows) {
         .datum(data)
         .attr('class', 'pv-line')
         .attr('fill', 'none')
-        .attr('stroke', '#28a745')
+        .attr('stroke', '#ff8c00')
         .attr('stroke-width', 3)
         .attr('d', line);
 
@@ -123,7 +123,7 @@ function drawWeatherChart(rows) {
         .attr('cx', function(d){ return x(d.date); })
         .attr('cy', function(d){ return y(d.valuePV); })
         .attr('r', 4)
-        .attr('fill', '#28a745')
+        .attr('fill', '#ff8c00')
         .attr('stroke', '#fff')
         .attr('stroke-width', 2)
         .on('mouseover', function(event, d) {
@@ -184,7 +184,7 @@ function drawWeatherChart(rows) {
             .attr('x2', innerWidth)
             .attr('y1', y(maxValue))
             .attr('y2', y(maxValue))
-            .attr('stroke', '#198754')
+            .attr('stroke', '#cc7000')
             .attr('stroke-width', 1)
             .attr('stroke-dasharray', '3,3')
             .style('opacity', 0.7);
@@ -192,14 +192,14 @@ function drawWeatherChart(rows) {
         // Max value label
         g.append('text')
             .attr('class', 'reference-label max-label')
-            .attr('x', innerWidth - 10)
-            .attr('y', y(maxValue) - 5)
-            .attr('text-anchor', 'end')
-            .style('font-size', '10px')
-            .style('font-weight', 'bold')
-            .style('fill', '#198754')
-            .style('text-shadow', '1px 1px 2px rgba(255,255,255,0.8)')
-            .text('Max: ' + formatNumberDE(maxValue, 1) + ' kWh');
+        .attr('x', innerWidth - 10)
+        .attr('y', y(maxValue) - 5)
+        .attr('text-anchor', 'end')
+        .style('font-size', '10px')
+        .style('font-weight', 'bold')
+        .style('fill', '#cc7000')
+        .style('text-shadow', '1px 1px 2px rgba(255,255,255,0.8)')
+        .text('Max: ' + formatNumberDE(maxValue, 1) + ' kWh');
     }
 
     // Highlight today's date (clamp within domain)
@@ -362,7 +362,7 @@ function drawHourlyWeatherChart(hourlyData) {
         .attr('y', function(d){ return y(d.valuePV); })
         .attr('width', barWidth)
         .attr('height', function(d){ return innerHeight - y(d.valuePV); })
-        .attr('fill', '#28a745')
+        .attr('fill', '#ff8c00')
         .attr('opacity', 0.8)
         .on('mouseover', function(event, d) {
             tooltip.transition().duration(200).style('opacity', .9);
@@ -392,7 +392,7 @@ function drawHourlyWeatherChart(hourlyData) {
             .attr('x2', innerWidth)
             .attr('y1', y(maxValue))
             .attr('y2', y(maxValue))
-            .attr('stroke', '#198754')
+            .attr('stroke', '#cc7000')
             .attr('stroke-width', 2)
             .attr('stroke-dasharray', '5,5');
 
@@ -404,7 +404,7 @@ function drawHourlyWeatherChart(hourlyData) {
             .attr('text-anchor', 'end')
             .style('font-size', '10px')
             .style('font-weight', 'bold')
-            .style('fill', '#198754')
+            .style('fill', '#cc7000')
             .style('text-shadow', '1px 1px 2px rgba(255,255,255,0.8)')
             .text('Max: ' + formatNumberDE(maxValue, 1) + ' kWh');
     }
@@ -517,7 +517,7 @@ function drawSolarPanel(powerPercent) {
     var gapX = (panelWidth - cellsX * cellWidth) / (cellsX + 1);
     var gapY = (panelHeight - cellsY * cellHeight) / (cellsY + 1);
     
-    var activeColor = '#4ade80';
+    var activeColor = '#ff8c00';
     var inactiveColor = '#1f2933';
 
     var cellIndex = 0;
@@ -775,7 +775,7 @@ function drawHourlyForecastChart(forecast, pv, miners) {
         .attr('x', -innerHeight / 2)
         .attr('y', innerWidth + 35)
         .attr('text-anchor', 'middle')
-        .attr('fill', '#28a745')
+        .attr('fill', '#ff8c00')
         .style('font-size', '12px')
         .text('PV-1h (kWh)');
 
@@ -850,7 +850,7 @@ function drawHourlyForecastChart(forecast, pv, miners) {
         .datum(workingForecast.forecast)
         .attr('class', 'forecast-pv-line')
         .attr('fill', 'none')
-        .attr('stroke', '#28a745')
+        .attr('stroke', '#ff8c00')
         .attr('stroke-width', 2)
         .attr('d', pvLine);
 
@@ -891,7 +891,7 @@ function drawHourlyForecastChart(forecast, pv, miners) {
             
             // PV forecast 1h (prominently displayed)
             if (d.pv_forecast_horizons && d.pv_forecast_horizons[1] !== undefined) {
-                tooltipHtml += 'PV-Ertrag (1h): <strong style="color:#28a745;">' + d.pv_forecast_horizons[1].toFixed(2) + ' kWh</strong><br/>';
+                tooltipHtml += 'PV-Ertrag (1h): <strong style="color:#ff8c00;">' + d.pv_forecast_horizons[1].toFixed(2) + ' kWh</strong><br/>';
             }
             
             // House base load

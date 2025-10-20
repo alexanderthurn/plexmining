@@ -130,6 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $miner['ip'] = isset($miner['ip']) ? (string)$miner['ip'] : '';
             $miner['model'] = isset($miner['model']) ? (string)$miner['model'] : '';
             $miner['id'] = isset($miner['id']) ? (string)$miner['id'] : '';
+            $miner['os'] = isset($miner['os']) ? (string)$miner['os'] : 'BrainsOSApi';
             
             // Ensure miner has a color
             if (!isset($miner['color']) || !is_string($miner['color']) || trim($miner['color']) === '') {

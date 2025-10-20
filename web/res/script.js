@@ -235,6 +235,7 @@ function renderPV(pv) {
     
     setText('pv-leistung', solarPowerDisplay + ' kW (' + Math.round(pvPowerPercent * 10) / 10 + '%)');
     setText('pv-kwp', pvKwp);
+    setText('pv-kwp-display', pvKwp);
     setText('batterie-kapazitaet', batteryCapacityDisplay);
     setText('batterie-current', batteryKwhDisplay);
     setText('batterie-percent', batteryPercent);
@@ -948,6 +949,7 @@ function setupMinerEditMode() {
             hashrate: 0,
             power_kw: 0,
             ip: '',
+            os: 'BrainsOSApi',
             color: getDefaultColor(editTable.children.length),
             levels: []
         };
@@ -967,6 +969,7 @@ function setupMinerEditMode() {
         
         const powerKwValue = (typeof miner?.power_kw === 'number') ? miner.power_kw : (typeof miner?.power === 'number' ? miner.power / 1000 : '');
         const minerColor = miner?.color || getDefaultColor(index !== null ? index : 0);
+        const minerOS = miner?.os || 'BrainsOSApi';
         const levels = (() => {
             const resolved = resolveLevels(miner);
             if (resolved.length) {
@@ -997,6 +1000,13 @@ function setupMinerEditMode() {
                     <div class="col-md-2">
                         <label class="form-label small">IP-Adresse</label>
                         <input type="text" class="form-control form-control-sm" data-field="ip" value="${miner?.ip || ''}" placeholder="192.168.1.101">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">OS</label>
+                        <select class="form-select form-select-sm" data-field="os">
+                            <option value="BrainsOSApi" ${minerOS === 'BrainsOSApi' ? 'selected' : ''}>BrainsOSApi</option>
+                            <option value="BrainsOSSSH" ${minerOS === 'BrainsOSSSH' ? 'selected' : ''}>BrainsOSSSH</option>
+                        </select>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label small">Farbe</label>
@@ -1248,6 +1258,7 @@ function setupMinerEditMode() {
                     hashrate: typeof miner.hashrate === 'number' ? miner.hashrate : 0,
                     power_kw: typeof miner.power_kw === 'number' ? miner.power_kw : 0,
                     ip: miner.ip || '',
+                    os: miner.os || 'BrainsOSApi',
                     color: miner.color || getDefaultColor(index),
                     levels: normalizedLevels.length ? normalizedLevels : createDefaultLevels(miner)
                 };
