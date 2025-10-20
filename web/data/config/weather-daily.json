@@ -1,72 +1,72 @@
 [
     {
-        "date": "2025-09-25",
-        "sunshine_hours": 0,
-        "shortwave_radiation_sum_Wh_m2": 0.69
+        "date": "2025-10-20",
+        "sunshine_hours": 0.54,
+        "shortwave_radiation_sum_Wh_m2": 3
     },
     {
-        "date": "2025-09-26",
-        "sunshine_hours": 4.18,
-        "shortwave_radiation_sum_Wh_m2": 7.31
+        "date": "2025-10-21",
+        "sunshine_hours": 1,
+        "shortwave_radiation_sum_Wh_m2": 2.34
     },
     {
-        "date": "2025-09-27",
-        "sunshine_hours": 8.97,
-        "shortwave_radiation_sum_Wh_m2": 13.06
+        "date": "2025-10-22",
+        "sunshine_hours": 1.97,
+        "shortwave_radiation_sum_Wh_m2": 3.63
     },
     {
-        "date": "2025-09-28",
-        "sunshine_hours": 8.59,
-        "shortwave_radiation_sum_Wh_m2": 11.6
+        "date": "2025-10-23",
+        "sunshine_hours": 6.89,
+        "shortwave_radiation_sum_Wh_m2": 7.17
     },
     {
-        "date": "2025-09-29",
-        "sunshine_hours": 7.52,
-        "shortwave_radiation_sum_Wh_m2": 11.94
+        "date": "2025-10-24",
+        "sunshine_hours": 7.14,
+        "shortwave_radiation_sum_Wh_m2": 5.38
     },
     {
-        "date": "2025-09-30",
-        "sunshine_hours": 0.56,
-        "shortwave_radiation_sum_Wh_m2": 5.19
+        "date": "2025-10-25",
+        "sunshine_hours": 1.83,
+        "shortwave_radiation_sum_Wh_m2": 2.75
     },
     {
-        "date": "2025-10-01",
-        "sunshine_hours": 9.42,
-        "shortwave_radiation_sum_Wh_m2": 11.43
+        "date": "2025-10-26",
+        "sunshine_hours": 8.93,
+        "shortwave_radiation_sum_Wh_m2": 7.91
     },
     {
-        "date": "2025-10-02",
-        "sunshine_hours": 10.23,
-        "shortwave_radiation_sum_Wh_m2": 10.31
+        "date": "2025-10-27",
+        "sunshine_hours": 8.86,
+        "shortwave_radiation_sum_Wh_m2": 8.24
     },
     {
-        "date": "2025-10-03",
-        "sunshine_hours": 9.91,
-        "shortwave_radiation_sum_Wh_m2": 12.82
+        "date": "2025-10-28",
+        "sunshine_hours": 8.8,
+        "shortwave_radiation_sum_Wh_m2": 7.46
     },
     {
-        "date": "2025-10-04",
-        "sunshine_hours": 10.36,
-        "shortwave_radiation_sum_Wh_m2": 12.73
+        "date": "2025-10-29",
+        "sunshine_hours": 0.98,
+        "shortwave_radiation_sum_Wh_m2": 2.8
     },
     {
-        "date": "2025-10-05",
-        "sunshine_hours": 5.65,
-        "shortwave_radiation_sum_Wh_m2": 12.37
+        "date": "2025-10-30",
+        "sunshine_hours": 1.53,
+        "shortwave_radiation_sum_Wh_m2": 2.75
     },
     {
-        "date": "2025-10-06",
-        "sunshine_hours": 6.38,
-        "shortwave_radiation_sum_Wh_m2": 12.25
+        "date": "2025-10-31",
+        "sunshine_hours": 8.61,
+        "shortwave_radiation_sum_Wh_m2": 7.34
     },
     {
-        "date": "2025-10-07",
-        "sunshine_hours": 9.94,
-        "shortwave_radiation_sum_Wh_m2": 10.12
+        "date": "2025-11-01",
+        "sunshine_hours": 8.54,
+        "shortwave_radiation_sum_Wh_m2": 8
     },
     {
-        "date": "2025-10-08",
-        "sunshine_hours": 7.98,
-        "shortwave_radiation_sum_Wh_m2": 6.29
+        "date": "2025-11-02",
+        "sunshine_hours": 8.48,
+        "shortwave_radiation_sum_Wh_m2": 8.23
     }
 ]

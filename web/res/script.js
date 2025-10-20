@@ -1323,6 +1323,63 @@ function setupEmergencyStop() {
     }
 }
 
+function setupWeatherUpdate() {
+    const updateWeatherLink = document.getElementById('update-weather-link');
+    
+    if (updateWeatherLink) {
+        updateWeatherLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Change link text to show loading state
+            const originalText = this.textContent;
+            this.textContent = 'Aktualisiere...';
+            this.style.pointerEvents = 'none';
+            
+            // Call the weather update API with force=true to ensure update
+            fetch('../api/weather_update.php?force=true')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.ok) {
+                        // Show success message
+                        this.textContent = '✓ Aktualisiert';
+                        this.style.color = 'green';
+                        
+                        // Reload the data to show updated weather
+                        fetchAndRenderMiners();
+                        
+                        // Reset link after 2 seconds
+                        setTimeout(() => {
+                            this.textContent = originalText;
+                            this.style.color = '';
+                            this.style.pointerEvents = '';
+                        }, 2000);
+                    } else {
+                        // Show error
+                        this.textContent = '✗ Fehler';
+                        this.style.color = 'red';
+                        
+                        setTimeout(() => {
+                            this.textContent = originalText;
+                            this.style.color = '';
+                            this.style.pointerEvents = '';
+                        }, 2000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating weather:', error);
+                    this.textContent = '✗ Fehler';
+                    this.style.color = 'red';
+                    
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                        this.style.color = '';
+                        this.style.pointerEvents = '';
+                    }, 2000);
+                });
+        });
+    }
+}
+
 // Initialize the page when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     fetchAndRenderMiners();
@@ -1332,6 +1389,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupSystemScaleHandlers();
     setupEmergencyStop();
     setupMinerEditMode();
+    setupWeatherUpdate();
     
     // Add event listeners for buttons if they exist
     const apiButton = document.getElementById('api-button');

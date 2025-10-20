@@ -2,7 +2,7 @@
     "c": "e",
     "pv_kwp": 120,
     "pvSystemFactor": 0.8,
-    "batteryCapacityKwh": 49.9,
+    "batteryCapacityKwh": 80,
     "autoMode": true,
     "weatherPowerScale": 0.79,
     "minerPowerScale": 1,
